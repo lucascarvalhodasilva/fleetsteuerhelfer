@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'Werbungskosten | Steuer-Tracker',
+  title: 'Werbungskosten | Fleet-Steuer',
   description: 'Verwalten Sie Ihre Werbungskosten, Verpflegungsmehraufwand und Fahrtkosten.',
 };
 

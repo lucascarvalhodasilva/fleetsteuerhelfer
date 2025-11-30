@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Steuer-Tracker",
-  description: "App zur Erfassung von steuerlichen Ausgaben",
+  title: "Fleet-Steuer",
+  description: "Fleet-Steuer – App zur Erfassung von steuerlichen Ausgaben",
 };
 
 export default function RootLayout({ children }) {

@@ -27,7 +27,7 @@ export default function Navbar() {
       <div className="container-custom flex h-16 items-center justify-between">
         <div className="flex items-center gap-8">
           <Link href="/" className="text-lg font-semibold tracking-tight text-foreground hover:text-primary transition-colors">
-            Steuer-Tracker
+            Fleet-Steuer
           </Link>
           
           <div className="relative" ref={dropdownRef}>
