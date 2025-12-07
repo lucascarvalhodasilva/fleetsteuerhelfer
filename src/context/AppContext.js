@@ -1,7 +1,27 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 
 const AppContext = createContext();
+
+// Helper to delete receipt files
+const deleteReceiptFiles = async (receiptFileName, dateStr) => {
+  if (!receiptFileName) return;
+
+  try {
+    // Delete from Directory.Documents (receipts folder)
+    try {
+      await Filesystem.deleteFile({
+        path: `receipts/${receiptFileName}`,
+        directory: Directory.Documents
+      });
+    } catch (e) {
+      console.warn(`Failed to delete internal receipt ${receiptFileName}:`, e);
+    }
+  } catch (e) {
+    console.error("Error in deleteReceiptFiles:", e);
+  }
+};
 
 export function AppProvider({ children }) {
   const [mealEntries, setMealEntries] = useState([]);
@@ -47,7 +67,7 @@ export function AppProvider({ children }) {
       const parsedRates = JSON.parse(storedTaxRates);
       setTaxRates(prev => ({ ...prev, ...parsedRates }));
     }
-    if (storedYear) setSelectedYear(JSON.parse(storedYear));
+    // if (storedYear) setSelectedYear(JSON.parse(storedYear)); // Always start with current year
   }, []);
 
   // Save to local storage on change
@@ -101,7 +121,13 @@ export function AppProvider({ children }) {
   };
 
   const deleteMileageEntry = (id) => {
-    setMileageEntries(prev => prev.filter(e => e.id !== id));
+    setMileageEntries(prev => {
+      const entry = prev.find(e => e.id === id);
+      if (entry && entry.receiptFileName) {
+        deleteReceiptFiles(entry.receiptFileName, entry.date);
+      }
+      return prev.filter(e => e.id !== id);
+    });
   };
 
   const getMileageRate = (vehicleType) => {
@@ -120,8 +146,20 @@ export function AppProvider({ children }) {
     setEquipmentEntries(prev => [...prev, { ...entry, id: entry.id || Date.now() }]);
   };
 
+  const updateEquipmentEntry = (updatedEntry) => {
+    setEquipmentEntries(prev => prev.map(entry => 
+      entry.id === updatedEntry.id ? updatedEntry : entry
+    ));
+  };
+
   const deleteEquipmentEntry = (id) => {
-    setEquipmentEntries(prev => prev.filter(e => e.id !== id));
+    setEquipmentEntries(prev => {
+      const entry = prev.find(e => e.id === id);
+      if (entry && entry.receiptFileName) {
+        deleteReceiptFiles(entry.receiptFileName, entry.date);
+      }
+      return prev.filter(e => e.id !== id);
+    });
   };
 
   const addMonthlyEmployerExpense = (entry) => {
@@ -145,62 +183,45 @@ export function AppProvider({ children }) {
   };
 
   const deleteExpenseEntry = (id) => {
-    setExpenseEntries(prev => prev.filter(e => e.id !== id));
+    setExpenseEntries(prev => {
+      const entry = prev.find(e => e.id === id);
+      if (entry && entry.receiptFileName) {
+        deleteReceiptFiles(entry.receiptFileName, entry.date);
+      }
+      return prev.filter(e => e.id !== id);
+    });
   };
 
-  const generateExampleData = () => {
-    const now = Date.now();
+  const importData = (data) => {
+    if (!data) return false;
     
-    // Meals
-    const meals = [
-      // 2024
-      { id: now + 1, date: '2024-05-15', endDate: '2024-05-15', startTime: '08:00', endTime: '20:00', duration: 12, rate: 14, deductible: 14, employerExpenses: 0 },
-      { id: now + 2, date: '2024-11-20', endDate: '2024-11-20', startTime: '06:00', endTime: '18:00', duration: 12, rate: 14, deductible: 6, employerExpenses: 8 },
-      // 2025
-      { id: now + 3, date: '2025-01-10', endDate: '2025-01-10', startTime: '08:00', endTime: '17:00', duration: 9, rate: 14, deductible: 14, employerExpenses: 0 },
-      { id: now + 4, date: '2025-03-15', endDate: '2025-03-16', startTime: '10:00', endTime: '10:00', duration: 24, rate: 28, deductible: 28, employerExpenses: 0 },
-      // 2026
-      { id: now + 5, date: '2026-02-01', endDate: '2026-02-01', startTime: '09:00', endTime: '18:00', duration: 9, rate: 14, deductible: 14, employerExpenses: 0 },
-    ];
-
-    // Mileage
-    const mileage = [
-      // 2024
-      { id: now + 101, date: '2024-05-15', startLocation: 'Zuhause', endLocation: 'Kunde A', distance: 50, totalKm: 100, allowance: 30, purpose: 'Kundenbesuch' },
-      // 2025
-      { id: now + 102, date: '2025-01-10', startLocation: 'Zuhause', endLocation: 'Büro', distance: 20, totalKm: 40, allowance: 12, purpose: 'Pendeln' },
-      { id: now + 103, date: '2025-03-15', startLocation: 'Zuhause', endLocation: 'Messe', distance: 200, totalKm: 400, allowance: 120, purpose: 'Messebesuch' },
-      // 2026
-      { id: now + 104, date: '2026-02-01', startLocation: 'Zuhause', endLocation: 'Schulung', distance: 30, totalKm: 60, allowance: 18, purpose: 'Fortbildung' },
-    ];
-
-    // Equipment
-    const equipment = [
-      // 2024
-      { id: now + 201, name: 'Laptop 2024', category: 'Elektronik', date: '2024-06-01', price: 1200, reimbursed: false, deductibleAmount: 0, status: 'Abschreibung erforderlich (> 952€)' },
-      // 2025
-      { id: now + 202, name: 'Monitor', category: 'Elektronik', date: '2025-01-05', price: 300, reimbursed: false, deductibleAmount: 300, status: 'Sofort absetzbar (GWG)' },
-      { id: now + 203, name: 'Bürostuhl', category: 'Möbel', date: '2025-02-20', price: 450, reimbursed: true, deductibleAmount: 0, status: 'Erstattet' },
-      // 2026
-      { id: now + 204, name: 'Fachbuch', category: 'Literatur', date: '2026-01-15', price: 50, reimbursed: false, deductibleAmount: 50, status: 'Sofort absetzbar (GWG)' },
-    ];
-
-    setMealEntries(prev => [...prev, ...meals]);
-    setMileageEntries(prev => [...prev, ...mileage]);
-    setEquipmentEntries(prev => [...prev, ...equipment]);
+    try {
+      if (data.mealEntries) setMealEntries(data.mealEntries);
+      if (data.mileageEntries) setMileageEntries(data.mileageEntries);
+      if (data.equipmentEntries) setEquipmentEntries(data.equipmentEntries);
+      if (data.expenseEntries) setExpenseEntries(data.expenseEntries);
+      if (data.monthlyEmployerExpenses) setMonthlyEmployerExpenses(data.monthlyEmployerExpenses);
+      if (data.defaultCommute) setDefaultCommute(data.defaultCommute);
+      if (data.taxRates) setTaxRates(data.taxRates);
+      if (data.selectedYear) setSelectedYear(data.selectedYear);
+      return true;
+    } catch (e) {
+      console.error("Import failed", e);
+      return false;
+    }
   };
 
   return (
     <AppContext.Provider value={{
       mealEntries, addMealEntry, deleteMealEntry, updateMealEntry,
       mileageEntries, addMileageEntry, deleteMileageEntry,
-      equipmentEntries, addEquipmentEntry, deleteEquipmentEntry,
+      equipmentEntries, addEquipmentEntry, deleteEquipmentEntry, updateEquipmentEntry,
       expenseEntries, addExpenseEntry, deleteExpenseEntry,
       monthlyEmployerExpenses, addMonthlyEmployerExpense, deleteMonthlyEmployerExpense,
       defaultCommute, setDefaultCommute,
       taxRates, setTaxRates, getMileageRate,
       selectedYear, setSelectedYear,
-      generateExampleData
+      importData
     }}>
       {children}
     </AppContext.Provider>

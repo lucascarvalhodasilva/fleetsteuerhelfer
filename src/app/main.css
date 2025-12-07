@@ -58,12 +58,15 @@ html {
   height: 100%;
   overflow: hidden;
   overscroll-behavior-y: none;
+  /* Reserve space for sticky header + safe area when jumping to anchors */
+  scroll-padding-top: calc(4rem + env(safe-area-inset-top));
 }
 
 body {
   height: 100%;
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  /* Disable momentum scrolling to avoid the "first tap stops scroll, second tap navigates" issue on mobile nav */
+  -webkit-overflow-scrolling: auto;
   background-color: var(--background);
   color: var(--foreground);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;

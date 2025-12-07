@@ -13,7 +13,7 @@ export default function CommuteSettings({ localDefaultCommute, setLocalDefaultCo
         {/* Toggle Buttons */}
         <div className="grid grid-cols-4 gap-2">
           {['car', 'motorcycle', 'bike', 'public_transport'].map(mode => {
-            const labels = { car: 'Auto', motorcycle: 'Motorrad', bike: 'Fahrrad', public_transport: 'Öffi' };
+            const labels = { car: 'Auto', motorcycle: 'Motorrad', bike: 'Fahrrad', public_transport: 'Andere' };
             const isActive = localDefaultCommute[mode].active;
             return (
               <button
@@ -50,7 +50,7 @@ export default function CommuteSettings({ localDefaultCommute, setLocalDefaultCo
               <input 
                 type="range" 
                 min="0" 
-                max="100" 
+                max="30" 
                 step="0.1"
                 value={localDefaultCommute.car.distance * 2}
                 onChange={(e) => {
@@ -121,7 +121,7 @@ export default function CommuteSettings({ localDefaultCommute, setLocalDefaultCo
           {/* Public Transport Input */}
           {localDefaultCommute.public_transport.active && (
             <div className="space-y-2 p-3 bg-secondary/30 rounded-lg border border-border/50">
-              <label className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Ticketkosten (Gesamt)</label>
+              <label className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Kosten (Gesamt)</label>
               <NumberInput
                 className="input-modern text-sm bg-card"
                 value={localDefaultCommute.public_transport.cost}
@@ -135,7 +135,7 @@ export default function CommuteSettings({ localDefaultCommute, setLocalDefaultCo
                 }}
                 placeholder="0.00"
               />
-              <p className="text-[10px] text-muted-foreground">Für Bahn, Bus, Flug oder andere Tickets (voll absetzbar).</p>
+              <p className="text-[10px] text-muted-foreground">Für Taxi, Uber, Roller, Bahn, Bus oder andere Tickets/Kosten.</p>
             </div>
           )}
         </div>

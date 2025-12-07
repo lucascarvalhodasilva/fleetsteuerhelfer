@@ -1,5 +1,6 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useAppContext } from '@/context/AppContext';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 
 /**
  * Hook to manage trip list data and operations.
@@ -12,6 +13,30 @@ export const useTripList = () => {
     deleteMileageEntry, 
     selectedYear 
   } = useAppContext();
+
+  const [viewingReceipt, setViewingReceipt] = useState(null);
+
+  const loadReceipt = async (fileName) => {
+    try {
+      const file = await Filesystem.readFile({
+        path: `receipts/${fileName}`,
+        directory: Directory.Documents
+      });
+      return `data:image/jpeg;base64,${file.data}`;
+    } catch (e) {
+      console.error('Error loading receipt:', e);
+      return null;
+    }
+  };
+
+  const handleViewReceipt = async (fileName) => {
+    const base64 = await loadReceipt(fileName);
+    if (base64) {
+      setViewingReceipt(base64);
+    } else {
+      alert('Beleg konnte nicht geladen werden.');
+    }
+  };
 
   const filteredMealEntries = useMemo(() => 
     mealEntries
@@ -40,6 +65,9 @@ export const useTripList = () => {
     filteredMealEntries,
     mileageEntries,
     handleDeleteEntry,
-    selectedYear
+    selectedYear,
+    viewingReceipt,
+    setViewingReceipt,
+    handleViewReceipt
   };
 };

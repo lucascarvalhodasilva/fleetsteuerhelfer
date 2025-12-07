@@ -11,13 +11,19 @@ export default function FullScreenTableView({
   if (!isOpen) return null;
 
   const totalSum = filteredMealEntries.reduce((sum, entry) => {
-    const dayMileage = mileageEntries.filter(m => m.date === entry.date || m.date === entry.endDate);
-    const tripTo = dayMileage.find(m => m.date === entry.date && m.purpose && m.purpose.includes('Beginn'));
-    const tripFrom = dayMileage.find(m => (m.date === (entry.endDate || entry.date)) && m.purpose && m.purpose.includes('Ende'));
+    const relatedMileage = mileageEntries.filter(m => m.relatedMealId === entry.id);
+    const dayMileage = relatedMileage.length > 0
+      ? relatedMileage
+      : mileageEntries.filter(m => m.date === entry.date || m.date === entry.endDate);
+
+    const tripTo = dayMileage.find(m => m.purpose && m.purpose.includes('Beginn'));
+    const tripFrom = dayMileage.find(m => m.purpose && m.purpose.includes('Ende'));
+    const publicTransportEntries = dayMileage.filter(m => m.vehicleType === 'public_transport');
     
     const amountTo = tripTo ? tripTo.allowance : 0;
     const amountFrom = tripFrom ? tripFrom.allowance : 0;
-    const mileageSum = amountTo + amountFrom;
+    const publicTransportSum = publicTransportEntries.reduce((acc, m) => acc + (m.allowance || 0), 0);
+    const mileageSum = amountTo + amountFrom + publicTransportSum;
     return sum + entry.deductible + mileageSum;
   }, 0);
 
@@ -60,14 +66,19 @@ export default function FullScreenTableView({
                 </tr>
               ) : (
                 filteredMealEntries.map((entry, idx) => {
-                  // Find associated mileage entries for this date range
-                  const dayMileage = mileageEntries.filter(m => m.date === entry.date || m.date === entry.endDate);
-                  const tripTo = dayMileage.find(m => m.date === entry.date && m.purpose && m.purpose.includes('Beginn'));
-                  const tripFrom = dayMileage.find(m => (m.date === (entry.endDate || entry.date)) && m.purpose && m.purpose.includes('Ende'));
+                  // Find associated mileage entries (prefer relatedMealId)
+                  const relatedMileage = mileageEntries.filter(m => m.relatedMealId === entry.id);
+                  const dayMileage = relatedMileage.length > 0
+                    ? relatedMileage
+                    : mileageEntries.filter(m => m.date === entry.date || m.date === entry.endDate);
+                  const tripTo = dayMileage.find(m => m.purpose && m.purpose.includes('Beginn'));
+                  const tripFrom = dayMileage.find(m => m.purpose && m.purpose.includes('Ende'));
+                  const publicTransportEntries = dayMileage.filter(m => m.vehicleType === 'public_transport');
                   
                   const amountTo = tripTo ? tripTo.allowance : 0;
                   const amountFrom = tripFrom ? tripFrom.allowance : 0;
-                  const mileageSum = amountTo + amountFrom;
+                  const publicTransportSum = publicTransportEntries.reduce((acc, m) => acc + (m.allowance || 0), 0);
+                  const mileageSum = amountTo + amountFrom + publicTransportSum;
                   const totalDeductible = entry.deductible + mileageSum;
 
                   const isMultiDay = entry.endDate && entry.endDate !== entry.date;

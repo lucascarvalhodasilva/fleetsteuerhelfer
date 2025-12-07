@@ -54,7 +54,20 @@ export default function CustomDatePicker({ value, onChange, className = "", min 
 
   return (
     <>
-      <div onClick={toggleOpen} className={`relative flex items-center cursor-pointer ${className}`}>
+      <div 
+        onClick={toggleOpen}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleOpen();
+          }
+        }}
+        tabIndex={0}
+        role="button"
+        aria-haspopup="dialog"
+        aria-expanded={isOpen}
+        className={`relative flex items-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-md ${className}`}
+      >
         <div className={`flex-1 truncate ${!value ? 'text-muted-foreground' : ''}`}>
           {displayValue || "TT.MM.JJJJ"}
         </div>

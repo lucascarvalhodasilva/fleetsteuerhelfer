@@ -3,121 +3,15 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 import { useAppContext } from '@/context/AppContext';
-import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
-import { Share } from '@capacitor/share';
-import { Capacitor } from '@capacitor/core';
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { selectedYear, setSelectedYear, mealEntries, mileageEntries, equipmentEntries, expenseEntries } = useAppContext();
+  const { selectedYear, setSelectedYear } = useAppContext();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 5 }, (_, i) => currentYear - 1 + i); // [2024, 2025, 2026, 2027, 2028] 
-
-  const downloadCSV = async () => {
-    let csvString = "";
-    let fileName = "";
-
-    if (pathname.startsWith('/expenses')) {
-      const filteredExpenses = expenseEntries.filter(e => new Date(e.date).getFullYear() === selectedYear);
-      fileName = `ausgaben_export_${selectedYear}.csv`;
-      
-      csvString += "Datum,Beschreibung,Betrag\n";
-      filteredExpenses.forEach(e => {
-        csvString += `${e.date},${e.description},${e.amount}\n`;
-      });
-    } else if (pathname.startsWith('/equipment')) {
-      const filteredEquipment = equipmentEntries.filter(e => new Date(e.date).getFullYear() === selectedYear);
-      fileName = `arbeitsmittel_export_${selectedYear}.csv`;
-
-      csvString += "Datum,Gegenstand,Preis,Status,Absetzbar\n";
-      filteredEquipment.forEach(e => {
-        csvString += `${e.date},${e.name},${e.price},${e.status},${e.deductibleAmount}\n`;
-      });
-    } else if (pathname.startsWith('/trips')) {
-      const filteredMeals = mealEntries.filter(e => new Date(e.date).getFullYear() === selectedYear);
-      fileName = `fahrten_export_${selectedYear}.csv`;
-
-      csvString += "Datum,Start,Ende,Dauer,Verpflegung,Fahrzeug,Fahrtkosten,Gesamt\n";
-      filteredMeals.forEach(e => {
-        // Find associated mileage entries
-        let associatedMileage = [];
-        
-        // 1. Try by relatedMealId
-        const linkedMileage = mileageEntries.filter(m => m.relatedMealId === e.id);
-        
-        if (linkedMileage.length > 0) {
-            associatedMileage = linkedMileage;
-        } else {
-            // 2. Fallback: Match by date and purpose keywords (legacy)
-            const dayMileage = mileageEntries.filter(m => m.date === e.date || m.date === e.endDate);
-            const tripTo = dayMileage.find(m => m.date === e.date && m.purpose && m.purpose.includes('Beginn'));
-            const tripFrom = dayMileage.find(m => (m.date === (e.endDate || e.date)) && m.purpose && m.purpose.includes('Ende'));
-            if (tripTo) associatedMileage.push(tripTo);
-            if (tripFrom) associatedMileage.push(tripFrom);
-        }
-
-        const mileageTotal = associatedMileage.reduce((sum, m) => sum + (m.allowance || 0), 0);
-        const totalDeductible = e.deductible + mileageTotal;
-
-        let vehicle = "";
-        if (mileageTotal > 0) {
-             const type = e.vehicleType || (associatedMileage[0] && associatedMileage[0].vehicleType);
-             if (type === 'car') vehicle = 'Auto';
-             else if (type === 'motorcycle') vehicle = 'Motorrad';
-             else if (type === 'bike') vehicle = 'Fahrrad';
-             else if (type === 'public_transport') vehicle = 'Öffis';
-             else vehicle = type || '';
-             
-             // Check for mixed types
-             const hasPublicTransport = associatedMileage.some(m => m.vehicleType === 'public_transport');
-             const hasPrivateTransport = associatedMileage.some(m => ['car', 'motorcycle', 'bike'].includes(m.vehicleType));
-             
-             if (hasPublicTransport && hasPrivateTransport) {
-                 vehicle = "Mix (PKW + Öffis)";
-             } else if (hasPublicTransport && !hasPrivateTransport) {
-                 vehicle = "Öffis";
-             }
-        }
-
-        csvString += `${e.date},${e.startTime},${e.endTime},${e.duration.toFixed(1)},${e.deductible.toFixed(2)},${vehicle},${mileageTotal.toFixed(2)},${totalDeductible.toFixed(2)}\n`;
-      });
-    } else {
-      return;
-    }
-
-    if (Capacitor.isNativePlatform()) {
-      try {
-        const result = await Filesystem.writeFile({
-          path: fileName,
-          data: csvString,
-          directory: Directory.Cache,
-          encoding: Encoding.UTF8,
-        });
-
-        await Share.share({
-          title: 'Steuer Export',
-          text: `Export für das Jahr ${selectedYear}`,
-          url: result.uri,
-          dialogTitle: 'Export teilen',
-        });
-      } catch (e) {
-        console.error('Export failed', e);
-        alert('Export fehlgeschlagen: ' + e.message);
-      }
-    } else {
-      const csvContent = "data:text/csv;charset=utf-8," + csvString;
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", fileName);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  }; 
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -164,6 +58,21 @@ export default function Navbar() {
     if (pathname.startsWith('/settings')) return 'Einstellungen';
     return '';
   };
+
+  // Scroll to top instantly on navigation to avoid leftover scroll positions
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Try all targets to ensure we really jump to top on mobile
+      const scrollTopNow = () => {
+        window.scrollTo({ top: 0, behavior: 'auto' });
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      };
+      // Run immediately and once after paint to catch late layout shifts
+      scrollTopNow();
+      requestAnimationFrame(scrollTopNow);
+    }
+  }, [pathname]);
 
   return (
     <>
@@ -219,17 +128,6 @@ export default function Navbar() {
               )}
             </div>
 
-            {(pathname.startsWith('/expenses') || pathname.startsWith('/equipment') || pathname.startsWith('/trips')) && (
-            <button
-              onClick={downloadCSV}
-              className="p-2 rounded-full bg-secondary/50 hover:bg-secondary text-foreground transition-all duration-200 border border-border/50 active:scale-95"
-              title="Export CSV"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-            </button>
-            )}
           </div>
         </div>
       </nav>

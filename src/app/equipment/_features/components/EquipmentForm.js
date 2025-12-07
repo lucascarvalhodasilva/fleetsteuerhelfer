@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import NumberInput from '@/components/NumberInput';
 import CustomDatePicker from '@/components/CustomDatePicker';
 import SuggestionInput from '@/components/SuggestionInput';
@@ -10,19 +10,52 @@ export default function EquipmentForm({
   handleSubmit, 
   tempReceipt, 
   setTempReceipt, 
+  removeReceipt,
   showCameraOptions, 
   setShowCameraOptions, 
   nameSuggestions, 
-  takePicture 
+  takePicture,
+  submitError,
+  editingId,
+  cancelEdit,
+  hasChanges
 }) {
+  const formRef = useRef(null);
+  const [isFlashing, setIsFlashing] = useState(false);
+
+  useEffect(() => {
+    if (editingId && formRef.current) {
+      setIsFlashing(true);
+      const timer = setTimeout(() => setIsFlashing(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [editingId]);
+
   return (
-    <div className="card-modern">
-      <h2 className="text-lg font-semibold mb-4 text-foreground">Neuer Eintrag</h2>
+    <div 
+      ref={formRef}
+      className={`card-modern transition-all duration-1000 ${
+        isFlashing ? 'ring-2 ring-primary shadow-lg shadow-primary/20' : ''
+      }`}
+    >
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-semibold text-foreground">
+          {editingId ? 'Eintrag bearbeiten' : 'Neuer Eintrag'}
+        </h2>
+        {editingId && (
+          <button 
+            type="button"
+            onClick={cancelEdit}
+            className="text-xs font-medium text-muted-foreground hover:text-foreground bg-secondary/50 hover:bg-secondary px-3 py-1.5 rounded-full transition-colors"
+          >
+            Abbrechen
+          </button>
+        )}
+      </div>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
           <label className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Bezeichnung</label>
           <SuggestionInput
-            required
             className="input-modern text-sm"
             value={formData.name}
             onChange={e => setFormData({...formData, name: e.target.value})}
@@ -32,7 +65,6 @@ export default function EquipmentForm({
         <div className="space-y-2">
           <label className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Kaufdatum</label>
           <CustomDatePicker
-            required
             className="input-modern text-sm"
             value={formData.date}
             onChange={e => setFormData({...formData, date: e.target.value})}
@@ -42,7 +74,6 @@ export default function EquipmentForm({
           <label className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Preis (Brutto €)</label>
           <NumberInput
             step="0.01"
-            required
             className="input-modern text-sm"
             value={formData.price}
             onChange={e => setFormData({...formData, price: e.target.value})}
@@ -50,7 +81,7 @@ export default function EquipmentForm({
         </div>
 
         <div className="space-y-2">
-          <label className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Beleg</label>
+          <label className="text-xs text-muted-foreground font-medium uppercase tracking-wider block mb-2">Beleg</label>
           <button 
             type="button" 
             onClick={() => setShowCameraOptions(true)} 
@@ -70,7 +101,7 @@ export default function EquipmentForm({
               />
               <button 
                 type="button" 
-                onClick={() => setTempReceipt(null)}
+                onClick={removeReceipt}
                 className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full w-6 h-6 flex items-center justify-center shadow-md hover:bg-destructive/90 transition-colors"
               >
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -81,9 +112,19 @@ export default function EquipmentForm({
           )}
         </div>
 
-        <button type="submit" className="w-full btn-primary py-3 mt-4 shadow-lg shadow-primary/20">
-          Hinzufügen
+        <button 
+          type="submit" 
+          disabled={editingId && !hasChanges}
+          className={`w-full btn-primary py-3 mt-4 shadow-lg shadow-primary/20 ${editingId && !hasChanges ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
+          {editingId ? 'Aktualisieren' : 'Hinzufügen'}
         </button>
+
+        {submitError && (
+          <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-sm text-destructive animate-in fade-in slide-in-from-top-2">
+            ⚠️ {submitError}
+          </div>
+        )}
       </form>
 
       {/* Camera Options Modal */}
@@ -93,7 +134,7 @@ export default function EquipmentForm({
             <h3 className="text-lg font-semibold mb-4 text-foreground">Beleg hinzufügen</h3>
             <div className="space-y-3">
               <button
-                onClick={() => takePicture(CameraSource.Camera)}
+                onClick={() => takePicture && takePicture(CameraSource.Camera)}
                 className="w-full p-4 rounded-lg bg-secondary/50 hover:bg-secondary border border-border flex items-center gap-3 transition-all"
               >
                 <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -103,7 +144,7 @@ export default function EquipmentForm({
                 <span className="font-medium">Kamera</span>
               </button>
               <button
-                onClick={() => takePicture(CameraSource.Photos)}
+                onClick={() => takePicture && takePicture(CameraSource.Photos)}
                 className="w-full p-4 rounded-lg bg-secondary/50 hover:bg-secondary border border-border flex items-center gap-3 transition-all"
               >
                 <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">

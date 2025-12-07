@@ -9,6 +9,5 @@ export const formatDate = (dateString) => {
     weekday: 'short',
     day: '2-digit',
     month: 'short',
-    year: 'numeric'
   }).format(date);
 };

@@ -20,7 +20,16 @@ export default function TripsPage() {
     handleSubmit, 
     autoAddStationTrips, 
     setAutoAddStationTrips,
-    submitError
+    submitError,
+    tempPublicTransportReceipt,
+    showPublicTransportCameraOptions,
+    setShowPublicTransportCameraOptions,
+    takePublicTransportPicture,
+    removePublicTransportReceipt,
+    editingId,
+    startEdit,
+    cancelEdit,
+    hasChanges
   } = useTripForm();
 
   const handleFormSubmit = (e) => {
@@ -35,7 +44,10 @@ export default function TripsPage() {
     filteredMealEntries, 
     mileageEntries, 
     handleDeleteEntry, 
-    selectedYear 
+    selectedYear,
+    viewingReceipt,
+    setViewingReceipt,
+    handleViewReceipt
   } = useTripList();
 
   const {
@@ -77,12 +89,20 @@ export default function TripsPage() {
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Form */}
-        <div className="space-y-6 lg:col-span-1">
+        <div className="space-y-6 lg:col-span-1 scroll-mt-32" id="trip-form-container">
           <TripForm 
             formData={formData}
             setFormData={setFormData}
             handleSubmit={handleFormSubmit}
             submitError={submitError}
+            editingId={editingId}
+            cancelEdit={cancelEdit}
+            hasChanges={hasChanges}
+            tempPublicTransportReceipt={tempPublicTransportReceipt}
+            showPublicTransportCameraOptions={showPublicTransportCameraOptions}
+            setShowPublicTransportCameraOptions={setShowPublicTransportCameraOptions}
+            takePublicTransportPicture={takePublicTransportPicture}
+            removePublicTransportReceipt={removePublicTransportReceipt}
           />
         </div>
 
@@ -104,9 +124,41 @@ export default function TripsPage() {
             selectedYear={selectedYear}
             setIsFullScreen={setIsFullScreen}
             highlightId={highlightId}
+            handleViewReceipt={handleViewReceipt}
+            onEdit={(entry) => {
+              startEdit(entry);
+              
+              // Scroll to form
+              const formContainer = document.getElementById('trip-form-container');
+              if (formContainer) {
+                formContainer.scrollIntoView({ behavior: 'smooth'});
+              } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }}
           />
         </div>
       </div>
+
+      {/* Receipt Viewer Modal */}
+      {viewingReceipt && (
+        <div className="fixed inset-0 bg-background/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setViewingReceipt(null)}>
+          <div className="relative max-w-3xl w-full max-h-[90vh] flex flex-col items-center">
+            <img 
+              src={viewingReceipt} 
+              alt="Beleg" 
+              className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
+              onClick={e => e.stopPropagation()}
+            />
+            <button 
+              onClick={() => setViewingReceipt(null)}
+              className="mt-4 px-6 py-2 bg-secondary text-foreground rounded-full hover:bg-secondary/80 transition-colors shadow-lg font-medium"
+            >
+              Schließen
+            </button>
+          </div>
+        </div>
+      )}
 
       <MonthlyExpenseModal 
         isOpen={showExpenseModal}

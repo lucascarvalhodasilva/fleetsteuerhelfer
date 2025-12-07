@@ -16,7 +16,21 @@ export default function ExpensesPage() {
     deleteExpenseEntry,
     selectedYear,
     isFullScreen,
-    setIsFullScreen
+    setIsFullScreen,
+    submitError,
+    // Receipt props
+    tempExpenseReceipt,
+    showExpenseCameraOptions,
+    setShowExpenseCameraOptions,
+    takeExpensePicture,
+    removeExpenseReceipt,
+    viewingReceipt,
+    setViewingReceipt,
+    handleViewReceipt,
+    editingId,
+    startEdit,
+    cancelEdit,
+    hasChanges
   } = useExpenses();
 
   const handleFormSubmit = (e) => {
@@ -39,11 +53,20 @@ export default function ExpensesPage() {
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Form */}
-        <div className="space-y-6 lg:col-span-1">
+        <div className="space-y-6 lg:col-span-1 scroll-mt-32" id="expense-form-container">
           <ExpenseForm 
             formData={formData}
             setFormData={setFormData}
             handleSubmit={handleFormSubmit}
+            submitError={submitError}
+            tempExpenseReceipt={tempExpenseReceipt}
+            showExpenseCameraOptions={showExpenseCameraOptions}
+            setShowExpenseCameraOptions={setShowExpenseCameraOptions}
+            takeExpensePicture={takeExpensePicture}
+            removeExpenseReceipt={removeExpenseReceipt}
+            editingId={editingId}
+            cancelEdit={cancelEdit}
+            hasChanges={hasChanges}
           />
         </div>
 
@@ -57,6 +80,22 @@ export default function ExpensesPage() {
             monthlyExpenses={monthlyExpenses}
             monthNames={monthNames}
             highlightId={highlightId}
+            handleViewReceipt={handleViewReceipt}
+            viewingReceipt={viewingReceipt}
+            setViewingReceipt={setViewingReceipt}
+            onEdit={(entry) => {
+              startEdit(entry);
+              
+              // Scroll to form
+              setTimeout(() => {
+                const formContainer = document.getElementById('expense-form-container');
+                if (formContainer) {
+                  formContainer.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+              }, 100);
+            }}
           />
         </div>
       </div>

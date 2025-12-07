@@ -13,11 +13,17 @@ export default function EquipmentPage() {
     setFormData,
     tempReceipt,
     setTempReceipt,
+    removeReceipt,
     showCameraOptions,
     setShowCameraOptions,
     nameSuggestions,
     takePicture,
-    handleSubmit
+    handleSubmit,
+    submitError,
+    editingId,
+    startEdit,
+    cancelEdit,
+    hasChanges
   } = useEquipmentForm();
 
   const handleFormSubmit = (e) => {
@@ -46,17 +52,22 @@ export default function EquipmentPage() {
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Form */}
-        <div className="space-y-6 lg:col-span-1">
+        <div className="space-y-6 lg:col-span-1 scroll-mt-32" id="equipment-form-container">
           <EquipmentForm 
             formData={formData}
             setFormData={setFormData}
             handleSubmit={handleFormSubmit}
             tempReceipt={tempReceipt}
             setTempReceipt={setTempReceipt}
+            removeReceipt={removeReceipt}
             showCameraOptions={showCameraOptions}
             setShowCameraOptions={setShowCameraOptions}
             nameSuggestions={nameSuggestions}
             takePicture={takePicture}
+            submitError={submitError}
+            editingId={editingId}
+            cancelEdit={cancelEdit}
+            hasChanges={hasChanges}
           />
         </div>
 
@@ -69,6 +80,17 @@ export default function EquipmentPage() {
             setIsFullScreen={setIsFullScreen}
             handleViewReceipt={handleViewReceipt}
             highlightId={highlightId}
+            onEdit={(entry) => {
+              startEdit(entry);
+              setTimeout(() => {
+                const formContainer = document.getElementById('equipment-form-container');
+                if (formContainer) {
+                  formContainer.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+              }, 100);
+            }}
           />
         </div>
       </div>

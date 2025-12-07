@@ -2,18 +2,16 @@
 import { useSettings } from './_features/hooks/useSettings';
 import CommuteSettings from './_features/components/CommuteSettings';
 import TaxSettings from './_features/components/TaxSettings';
+import BackupSettings from './_features/components/BackupSettings';
 
 export default function SettingsPage() {
   const {
     localDefaultCommute,
     setLocalDefaultCommute,
-    localTaxRates,
-    handleTaxRateChange,
     hasChanges,
     setHasChanges,
     isSaving,
-    handleSave,
-    taxRates
+    handleSave
   } = useSettings();
 
   return (
@@ -35,20 +33,15 @@ export default function SettingsPage() {
           </button>
         </div>
       </div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <CommuteSettings 
+
+         <CommuteSettings 
           localDefaultCommute={localDefaultCommute}
           setLocalDefaultCommute={setLocalDefaultCommute}
           setHasChanges={setHasChanges}
         />
-
-        <TaxSettings 
-          localTaxRates={localTaxRates}
-          handleTaxRateChange={handleTaxRateChange}
-          currentTaxRates={taxRates}
-        />
-      </div>
+        <TaxSettings />
+        <BackupSettings />
+ 
     </div>
   );
 }

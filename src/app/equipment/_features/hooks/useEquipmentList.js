@@ -11,7 +11,7 @@ export const useEquipmentList = () => {
     try {
       const file = await Filesystem.readFile({
         path: `receipts/${fileName}`,
-        directory: Directory.Data
+        directory: Directory.Documents
       });
       return `data:image/jpeg;base64,${file.data}`;
     } catch (e) {

@@ -36,7 +36,20 @@ export default function CustomTimePicker({ value, onChange, className = "" }) {
 
   return (
     <>
-      <div onClick={() => setIsOpen(true)} className={`relative flex items-center cursor-pointer ${className}`}>
+      <div 
+        onClick={() => setIsOpen(true)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setIsOpen(true);
+          }
+        }}
+        tabIndex={0}
+        role="button"
+        aria-haspopup="dialog"
+        aria-expanded={isOpen}
+        className={`relative flex items-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-md ${className}`}
+      >
         <div className={`flex-1 truncate ${!value ? 'text-muted-foreground' : ''}`}>
           {value || "--:--"}
         </div>

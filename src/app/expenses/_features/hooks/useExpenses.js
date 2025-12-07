@@ -1,5 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useAppContext } from '@/context/AppContext';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 
 export const useExpenses = () => {
   const { expenseEntries, addExpenseEntry, deleteExpenseEntry, selectedYear } = useAppContext();
@@ -9,14 +11,182 @@ export const useExpenses = () => {
     date: '',
     amount: ''
   });
+  const [submitError, setSubmitError] = useState(null);
 
-  const handleSubmit = (e, onSuccess) => {
+  // Receipt State
+  const [tempExpenseReceipt, setTempExpenseReceipt] = useState(null);
+  const [tempExpenseReceiptPath, setTempExpenseReceiptPath] = useState(null);
+  const [showExpenseCameraOptions, setShowExpenseCameraOptions] = useState(false);
+  const [viewingReceipt, setViewingReceipt] = useState(null);
+  
+  // Edit State
+  const [editingId, setEditingId] = useState(null);
+  const [initialEditData, setInitialEditData] = useState(null);
+  const [initialReceiptPath, setInitialReceiptPath] = useState(null);
+
+  const takeExpensePicture = async (source) => {
+    try {
+      const image = await Camera.getPhoto({
+        quality: 80,
+        allowEditing: false,
+        resultType: CameraResultType.Base64,
+        source: source
+      });
+
+      // 1. Save to Cache temporarily
+      const timestamp = Date.now();
+      const tempFileName = `tmp_receipt_${timestamp}.jpg`;
+      const tempPath = `temp/expenses/${tempFileName}`;
+
+      await Filesystem.writeFile({
+        path: tempPath,
+        data: image.base64String,
+        directory: Directory.Cache,
+        recursive: true
+      });
+
+      // 2. Use for preview and store path
+      setTempExpenseReceipt(image.base64String);
+      setTempExpenseReceiptPath(tempPath);
+      setShowExpenseCameraOptions(false);
+    } catch (error) {
+      console.error('Camera error:', error);
+    }
+  };
+
+  const removeExpenseReceipt = async () => {
+    if (tempExpenseReceiptPath) {
+      try {
+        await Filesystem.deleteFile({
+          path: tempExpenseReceiptPath,
+          directory: Directory.Cache
+        });
+      } catch (e) {
+        console.warn('Failed to delete temp file on remove:', e);
+      }
+    }
+    setTempExpenseReceipt(null);
+    setTempExpenseReceiptPath(null);
+  };
+
+  const saveExpenseReceiptFinal = async (entryId, dateStr) => {
+    if (!tempExpenseReceiptPath) return null;
+
+    try {
+      // Read from Cache
+      const file = await Filesystem.readFile({
+        path: tempExpenseReceiptPath,
+        directory: Directory.Cache
+      });
+
+      // Format Timestamp: yyyymmddHHMM
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      const HH = String(now.getHours()).padStart(2, '0');
+      const MM = String(now.getMinutes()).padStart(2, '0');
+      const timeStr = `${yyyy}${mm}${dd}${HH}${MM}`;
+
+      // Define filenames
+      const fileNameInternal = `expense_${entryId}_${timeStr}.jpg`;
+      const fileNameUser = `ausgabe_${entryId}_${timeStr}.jpg`;
+
+      // Write to Directory.Documents
+      await Filesystem.writeFile({
+        path: `receipts/${fileNameInternal}`,
+        data: file.data,
+        directory: Directory.Documents,
+        recursive: true
+      });
+
+      // Cleanup Cache
+      await Filesystem.deleteFile({
+        path: tempExpenseReceiptPath,
+        directory: Directory.Cache
+      });
+
+      return fileNameInternal;
+    } catch (e) {
+      console.error('Error saving receipt final:', e);
+      return null;
+    }
+  };
+
+  const loadReceipt = async (fileName) => {
+    try {
+      const file = await Filesystem.readFile({
+        path: `receipts/${fileName}`,
+        directory: Directory.Documents
+      });
+      return file.data;
+    } catch (e) {
+      console.error('Error loading receipt:', e);
+      return null;
+    }
+  };
+
+  const handleViewReceipt = async (entry) => {
+    if (entry.receiptFileName) {
+      const base64Data = await loadReceipt(entry.receiptFileName);
+      if (base64Data) {
+        setViewingReceipt(base64Data);
+      }
+    }
+  };
+
+  const handleSubmit = async (e, onSuccess) => {
     e.preventDefault();
-    const newId = Date.now();
+    setSubmitError(null);
+
+    if (!formData.description.trim()) {
+      setSubmitError("Bitte eine Beschreibung eingeben.");
+      return;
+    }
+
+    if (!formData.date) {
+      setSubmitError("Bitte ein Datum auswählen.");
+      return;
+    }
+
+    const amount = parseFloat(formData.amount);
+    if (!formData.amount || isNaN(amount) || amount <= 0) {
+      setSubmitError("Bitte einen gültigen Betrag (> 0) eingeben.");
+      return;
+    }
+
+    const newId = editingId || Date.now();
+    let receiptFileName = null;
+
+    // If editing, check if we need to update receipt
+    if (editingId) {
+      // If path changed or removed
+      if (tempExpenseReceiptPath !== initialReceiptPath) {
+        if (tempExpenseReceiptPath) {
+           receiptFileName = await saveExpenseReceiptFinal(newId, formData.date);
+        } else {
+           receiptFileName = null; // Receipt removed
+        }
+      } else {
+        // Keep existing receipt if not changed
+        const existingEntry = expenseEntries.find(e => e.id === editingId);
+        receiptFileName = existingEntry ? existingEntry.receiptFileName : null;
+      }
+      
+      // Remove old entry first
+      deleteExpenseEntry(editingId);
+    } else {
+      // New Entry
+      if (tempExpenseReceiptPath) {
+        receiptFileName = await saveExpenseReceiptFinal(newId, formData.date);
+      }
+    }
+
     addExpenseEntry({
       ...formData,
       id: newId,
-      amount: parseFloat(formData.amount)
+      amount: amount,
+      receiptFileName
     });
 
     setFormData({
@@ -24,10 +194,91 @@ export const useExpenses = () => {
       date: '',
       amount: ''
     });
+    setTempExpenseReceipt(null);
+    setTempExpenseReceiptPath(null);
+    setEditingId(null);
+    setInitialEditData(null);
+    setInitialReceiptPath(null);
 
     if (onSuccess) {
       onSuccess(newId);
     }
+  };
+
+  const startEdit = async (entry) => {
+    const editData = {
+      description: entry.description,
+      date: entry.date,
+      amount: entry.amount
+    };
+
+    let loadedReceipt = null;
+    let loadedPath = null;
+
+    if (entry.receiptFileName) {
+      try {
+        // Try reading from Documents/receipts/
+        let fileData;
+        try {
+          const file = await Filesystem.readFile({
+            path: `receipts/${entry.receiptFileName}`,
+            directory: Directory.Documents
+          });
+          fileData = file.data;
+        } catch (e) {
+          // Fallback to Data/receipts/
+          try {
+            const file = await Filesystem.readFile({
+              path: `receipts/${entry.receiptFileName}`,
+              directory: Directory.Data
+            });
+            fileData = file.data;
+          } catch (e2) {
+            console.warn("Could not find receipt file", e2);
+          }
+        }
+
+        if (fileData) {
+          // Write to temp cache
+          const tempFileName = `restored_expense_${Date.now()}.jpg`;
+          const tempPath = `temp/expenses/${tempFileName}`;
+          
+          await Filesystem.writeFile({
+            path: tempPath,
+            data: fileData,
+            directory: Directory.Cache,
+            recursive: true
+          });
+
+          loadedReceipt = fileData;
+          loadedPath = tempPath;
+        }
+      } catch (e) {
+        console.error("Error restoring receipt for edit", e);
+      }
+    }
+
+    setFormData(editData);
+    setInitialEditData(editData);
+    setTempExpenseReceipt(loadedReceipt);
+    setTempExpenseReceiptPath(loadedPath);
+    setInitialReceiptPath(loadedPath);
+    setEditingId(entry.id);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setInitialEditData(null);
+    setInitialReceiptPath(null);
+    setSubmitError(null);
+    setTempExpenseReceipt(null);
+    setTempExpenseReceiptPath(null);
+    
+    setFormData({
+      description: '',
+      date: '',
+      amount: ''
+    });
   };
 
   const filteredEntries = useMemo(() => (expenseEntries || [])
@@ -57,6 +308,23 @@ export const useExpenses = () => {
     deleteExpenseEntry,
     selectedYear,
     isFullScreen,
-    setIsFullScreen
+    setIsFullScreen,
+    submitError,
+    // Receipt props
+    tempExpenseReceipt,
+    showExpenseCameraOptions,
+    setShowExpenseCameraOptions,
+    takeExpensePicture,
+    removeExpenseReceipt,
+    viewingReceipt,
+    setViewingReceipt,
+    handleViewReceipt,
+    editingId,
+    startEdit,
+    cancelEdit,
+    hasChanges: editingId ? (
+      JSON.stringify(formData) !== JSON.stringify(initialEditData) || 
+      tempExpenseReceiptPath !== initialReceiptPath
+    ) : true
   };
 };

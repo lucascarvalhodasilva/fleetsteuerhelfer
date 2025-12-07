@@ -51,5 +51,9 @@
 	<string>Wir benötigen Zugriff auf die Fotogalerie, um Belege zu speichern.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Wir benötigen Zugriff auf die Fotogalerie, um Belege auszuwählen.</string>
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
 </dict>
 </plist>

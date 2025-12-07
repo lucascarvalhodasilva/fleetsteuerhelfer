@@ -4,14 +4,21 @@ import { Camera, CameraResultType } from '@capacitor/camera';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 
 export const useEquipmentForm = () => {
-  const { addEquipmentEntry, taxRates } = useAppContext();
+  const { addEquipmentEntry, updateEquipmentEntry, equipmentEntries, deleteEquipmentEntry, taxRates } = useAppContext();
   const [formData, setFormData] = useState({
     name: '',
     date: '',
     price: ''
   });
   const [tempReceipt, setTempReceipt] = useState(null); // Base64 string for preview
+  const [tempReceiptPath, setTempReceiptPath] = useState(null); // Path to temp file in Cache
   const [showCameraOptions, setShowCameraOptions] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
+
+  // Edit State
+  const [editingId, setEditingId] = useState(null);
+  const [initialEditData, setInitialEditData] = useState(null);
+  const [initialReceiptPath, setInitialReceiptPath] = useState(null);
 
   const nameSuggestions = [
     "Laptop", "Smartphone", "Monitor", "Tastatur", "Maus", "Headset", 
@@ -27,32 +34,182 @@ export const useEquipmentForm = () => {
         resultType: CameraResultType.Base64,
         source: source
       });
+
+      // 1. Save to Cache temporarily
+      const timestamp = Date.now();
+      const tempFileName = `tmp_receipt_${timestamp}.jpg`;
+      const tempPath = `temp/equipment/${tempFileName}`;
+
+      await Filesystem.writeFile({
+        path: tempPath,
+        data: image.base64String,
+        directory: Directory.Cache,
+        recursive: true
+      });
+
+      // 2. Use for preview and store path
       setTempReceipt(image.base64String);
+      setTempReceiptPath(tempPath);
       setShowCameraOptions(false);
     } catch (error) {
       console.error('Camera error:', error);
     }
   };
 
-  const saveReceiptToDisk = async (base64Data) => {
+  const saveReceiptFinal = async (entryId, dateStr) => {
+    if (!tempReceiptPath) return null;
+
     try {
-      const fileName = `receipt_${Date.now()}.jpg`;
+      // Read from Cache
+      const file = await Filesystem.readFile({
+        path: tempReceiptPath,
+        directory: Directory.Cache
+      });
+
+      // Format Timestamp: yyyymmddHHMM
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      const HH = String(now.getHours()).padStart(2, '0');
+      const MM = String(now.getMinutes()).padStart(2, '0');
+      const timeStr = `${yyyy}${mm}${dd}${HH}${MM}`;
+
+      // Define filenames
+      const fileNameInternal = `equipment_${entryId}_${timeStr}.jpg`;
+
+      // Write to Directory.Documents
       await Filesystem.writeFile({
-        path: `receipts/${fileName}`,
-        data: base64Data,
-        directory: Directory.Data,
+        path: `receipts/${fileNameInternal}`,
+        data: file.data,
+        directory: Directory.Documents,
         recursive: true
       });
-      return fileName;
+
+      // Cleanup Cache
+      await Filesystem.deleteFile({
+        path: tempReceiptPath,
+        directory: Directory.Cache
+      });
+
+      return fileNameInternal;
     } catch (e) {
-      console.error('Error saving receipt:', e);
+      console.error('Error saving receipt final:', e);
       return null;
     }
   };
 
+  const removeReceipt = async () => {
+    if (tempReceiptPath) {
+      try {
+        await Filesystem.deleteFile({
+          path: tempReceiptPath,
+          directory: Directory.Cache
+        });
+      } catch (e) {
+        console.warn('Failed to delete temp file on remove:', e);
+      }
+    }
+    setTempReceipt(null);
+    setTempReceiptPath(null);
+  };
+
+  const startEdit = async (entry) => {
+    const editData = {
+      name: entry.name,
+      date: entry.date,
+      price: entry.price
+    };
+
+    let loadedReceipt = null;
+    let loadedPath = null;
+
+    if (entry.receiptFileName) {
+      try {
+        // Try reading from Documents/receipts/
+        let fileData;
+        try {
+          const file = await Filesystem.readFile({
+            path: `receipts/${entry.receiptFileName}`,
+            directory: Directory.Documents
+          });
+          fileData = file.data;
+        } catch (e) {
+          // Fallback to Data/receipts/
+          try {
+            const file = await Filesystem.readFile({
+              path: `receipts/${entry.receiptFileName}`,
+              directory: Directory.Data
+            });
+            fileData = file.data;
+          } catch (e2) {
+            console.warn("Could not find receipt file", e2);
+          }
+        }
+
+        if (fileData) {
+          // Write to temp cache
+          const tempFileName = `restored_equipment_${Date.now()}.jpg`;
+          const tempPath = `temp/equipment/${tempFileName}`;
+          
+          await Filesystem.writeFile({
+            path: tempPath,
+            data: fileData,
+            directory: Directory.Cache,
+            recursive: true
+          });
+
+          loadedReceipt = fileData;
+          loadedPath = tempPath;
+        }
+      } catch (e) {
+        console.error("Error restoring receipt for edit", e);
+      }
+    }
+
+    setFormData(editData);
+    setInitialEditData(editData);
+    setTempReceipt(loadedReceipt);
+    setTempReceiptPath(loadedPath);
+    setInitialReceiptPath(loadedPath);
+    setEditingId(entry.id);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setInitialEditData(null);
+    setInitialReceiptPath(null);
+    setSubmitError(null);
+    setTempReceipt(null);
+    setTempReceiptPath(null);
+    
+    setFormData({
+      name: '',
+      date: '',
+      price: ''
+    });
+  };
+
   const handleSubmit = async (e, onSuccess) => {
     e.preventDefault();
+    setSubmitError(null);
+
+    if (!formData.name.trim()) {
+      setSubmitError("Bitte eine Bezeichnung eingeben.");
+      return;
+    }
+
+    if (!formData.date) {
+      setSubmitError("Bitte ein Kaufdatum auswählen.");
+      return;
+    }
+
     const price = parseFloat(formData.price);
+    if (!formData.price || isNaN(price) || price <= 0) {
+      setSubmitError("Bitte einen gültigen Preis (> 0) eingeben.");
+      return;
+    }
+
     const gwgLimit = taxRates?.gwgLimit || 952;
     const isDeductibleImmediately = price <= gwgLimit; 
     
@@ -74,20 +231,44 @@ export const useEquipmentForm = () => {
       status = `Abschreibung (3 Jahre) - ${monthsInYear} Monate anteilig`;
     }
 
+    const newId = editingId || Date.now();
     let receiptFileName = null;
-    if (tempReceipt) {
-      receiptFileName = await saveReceiptToDisk(tempReceipt);
+    
+    // If editing, check if we need to update receipt
+    if (editingId) {
+      // If path changed or removed
+      if (tempReceiptPath !== initialReceiptPath) {
+        if (tempReceiptPath) {
+           receiptFileName = await saveReceiptFinal(newId, formData.date);
+        } else {
+           receiptFileName = null; // Receipt removed
+        }
+      } else {
+        // Keep existing receipt if not changed
+        const existingEntry = equipmentEntries.find(e => e.id === editingId);
+        receiptFileName = existingEntry ? existingEntry.receiptFileName : null;
+      }
+    } else {
+      // New Entry
+      if (tempReceiptPath) {
+        receiptFileName = await saveReceiptFinal(newId, formData.date);
+      }
     }
 
-    const newId = Date.now();
-    addEquipmentEntry({
+    const entryData = {
       ...formData,
       id: newId,
       price,
       deductibleAmount,
       status,
       receiptFileName
-    });
+    };
+
+    if (editingId) {
+      updateEquipmentEntry(entryData);
+    } else {
+      addEquipmentEntry(entryData);
+    }
 
     setFormData({
       name: '',
@@ -95,6 +276,10 @@ export const useEquipmentForm = () => {
       price: ''
     });
     setTempReceipt(null);
+    setTempReceiptPath(null);
+    setEditingId(null);
+    setInitialEditData(null);
+    setInitialReceiptPath(null);
 
     if (onSuccess) {
       onSuccess(newId);
@@ -106,10 +291,19 @@ export const useEquipmentForm = () => {
     setFormData,
     tempReceipt,
     setTempReceipt,
+    removeReceipt,
     showCameraOptions,
     setShowCameraOptions,
     nameSuggestions,
     takePicture,
-    handleSubmit
+    handleSubmit,
+    submitError,
+    editingId,
+    startEdit,
+    cancelEdit,
+    hasChanges: editingId ? (
+      JSON.stringify(formData) !== JSON.stringify(initialEditData) || 
+      tempReceiptPath !== initialReceiptPath
+    ) : true
   };
 };

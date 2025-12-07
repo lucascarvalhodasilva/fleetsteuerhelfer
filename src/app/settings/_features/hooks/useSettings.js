@@ -5,8 +5,7 @@ export const useSettings = () => {
   const { 
     defaultCommute,
     setDefaultCommute,
-    taxRates,
-    setTaxRates
+    taxRates
   } = useAppContext();
 
   // Local state for manual saving
@@ -16,7 +15,6 @@ export const useSettings = () => {
     bike: { active: false, distance: 0 },
     public_transport: { active: false, cost: '' }
   });
-  const [localTaxRates, setLocalTaxRates] = useState(taxRates);
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -29,24 +27,13 @@ export const useSettings = () => {
         bike: { active: false, distance: 0 },
         public_transport: { active: false, cost: '' }
       });
-      setLocalTaxRates(taxRates);
     }
-  }, [defaultCommute, taxRates, hasChanges]);
-
-  const handleTaxRateChange = (e) => {
-    const { name, value } = e.target;
-    setLocalTaxRates(prev => ({
-      ...prev,
-      [name]: parseFloat(value)
-    }));
-    setHasChanges(true);
-  };
+  }, [defaultCommute, hasChanges]);
 
   const handleSave = () => {
     setIsSaving(true);
     setTimeout(() => {
       setDefaultCommute(localDefaultCommute);
-      setTaxRates(localTaxRates);
       setHasChanges(false);
       setIsSaving(false);
     }, 1300);
@@ -55,8 +42,6 @@ export const useSettings = () => {
   return {
     localDefaultCommute,
     setLocalDefaultCommute,
-    localTaxRates,
-    handleTaxRateChange,
     hasChanges,
     setHasChanges,
     isSaving,
