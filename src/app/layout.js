@@ -1,7 +1,8 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./main.css";
 import { AppProvider } from "@/context/AppContext";
-import Navbar from "@/components/ui/Navbar";
+import Header from "@/components/ui/Header";
+import BottomTabBar from "@/components/ui/BottomTabBar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,15 +34,16 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="de">
+    <html lang="de" className="h-full">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background min-h-screen pb-20 pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] flex flex-col items-center gap-0`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background h-full pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] flex flex-col overflow-hidden`}
       >
         <AppProvider>
-          <Navbar />
-          <main className="w-full max-w-4xl">
+          <Header />
+          <main className="flex-1 min-h-0 w-full max-w-4xl mx-auto overflow-y-auto">
             {children}
           </main>
+          <BottomTabBar />
         </AppProvider>
       </body>
     </html>

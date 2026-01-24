@@ -40,7 +40,7 @@ const KPIItem = ({ icon, label, value, variant = 'default' }) => {
  * @typedef {Object} DashboardKPIsProps
  * @property {number} selectedYear - The currently selected tax year
  * @property {number} grandTotal - Total tax-deductible amount
- * @property {number} totalMeals - Total meal allowance (Verpflegungsmehraufwand)
+ * @property {number} totalTrips - Total trip allowance (Verpflegungsmehraufwand)
  * @property {number} totalMileage - Total mileage/travel costs (Fahrtkosten)
  * @property {number} totalEquipment - Total work equipment costs (Arbeitsmittel)
  * @property {number} totalEmployerReimbursement - Total employer reimbursements (Spesen)
@@ -59,7 +59,7 @@ const KPIItem = ({ icon, label, value, variant = 'default' }) => {
  * <DashboardKPIs
  *   selectedYear={2025}
  *   grandTotal={5000}
- *   totalMeals={1200}
+ *   totalTrips={1200}
  *   totalMileage={2500}
  *   totalEquipment={800}
  *   totalEmployerReimbursement={500}
@@ -70,7 +70,7 @@ const KPIItem = ({ icon, label, value, variant = 'default' }) => {
 export default function DashboardKPIs({ 
   selectedYear, 
   grandTotal, 
-  totalMeals, 
+  totalTrips, 
   totalMileage, 
   totalEquipment, 
   totalEmployerReimbursement, 
@@ -109,7 +109,7 @@ export default function DashboardKPIs({
             </svg>
           }
           label="Verpflegung"
-          value={`${totalMeals.toFixed(2)} €`}
+          value={`${totalTrips.toFixed(2)} €`}
         />
         <KPIItem
           icon={

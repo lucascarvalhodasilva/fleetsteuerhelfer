@@ -4,14 +4,14 @@ import { formatDate } from '@/utils/dateFormatter';
 const monthNames = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
 
 /**
- * @typedef {Object} MealEntry
+ * @typedef {Object} TripEntry
  * @property {number|string} id - Unique identifier
  * @property {string} date - Start date
  * @property {string} [endDate] - End date for multi-day trips
  * @property {string} startTime - Start time
  * @property {string} endTime - End time
  * @property {number} duration - Duration in hours
- * @property {number} deductible - Deductible meal amount
+ * @property {number} deductible - Deductible trip amount
  */
 
 /**
@@ -20,7 +20,7 @@ const monthNames = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli'
  * @property {string} date - Entry date
  * @property {number} [allowance] - Mileage allowance amount
  * @property {string} [vehicleType] - Type of vehicle used
- * @property {number|string} [relatedMealId] - Related meal entry ID
+ * @property {number|string} [relatedTripId] - Related trip entry ID
  * @property {string} [purpose] - Trip purpose
  */
 
@@ -28,7 +28,7 @@ const monthNames = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli'
  * @typedef {Object} FullScreenTableViewProps
  * @property {boolean} isOpen - Whether the view is open
  * @property {Function} onClose - Function to close the view
- * @property {MealEntry[]} filteredMealEntries - Filtered meal entries for the selected year
+ * @property {TripEntry[]} tripEntries - Trip entries for the selected year
  * @property {MileageEntry[]} mileageEntries - All mileage entries
  * @property {string|number} selectedYear - Currently selected year
  */
@@ -37,7 +37,7 @@ const monthNames = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli'
  * Calculates total deductible for an entry including mileage
  */
 function calculateEntryTotal(entry, mileageEntries) {
-  const relatedMileage = mileageEntries.filter(m => m.relatedMealId === entry.id);
+  const relatedMileage = mileageEntries.filter(m => m.relatedTripId === entry.id);
   const dayMileage = relatedMileage.length > 0
     ? relatedMileage
     : mileageEntries.filter(m => m.date === entry.date || m.date === entry.endDate);
@@ -67,7 +67,7 @@ function calculateEntryTotal(entry, mileageEntries) {
 export default function FullScreenTableView({ 
   isOpen, 
   onClose, 
-  filteredMealEntries, 
+  tripEntries, 
   mileageEntries, 
   selectedYear 
 }) {
@@ -83,7 +83,7 @@ export default function FullScreenTableView({
   };
 
   // Group entries by month
-  const entriesByMonth = filteredMealEntries.reduce((acc, entry) => {
+  const entriesByMonth = tripEntries.reduce((acc, entry) => {
     const month = new Date(entry.date).getMonth();
     if (!acc[month]) acc[month] = [];
     acc[month].push(entry);
@@ -99,7 +99,7 @@ export default function FullScreenTableView({
     return acc;
   }, {});
 
-  const totalSum = filteredMealEntries.reduce((sum, entry) => {
+  const totalSum = tripEntries.reduce((sum, entry) => {
     const { totalDeductible } = calculateEntryTotal(entry, mileageEntries);
     return sum + totalDeductible;
   }, 0);
@@ -117,7 +117,7 @@ export default function FullScreenTableView({
             </div>
             <div>
               <h2 className="text-base font-semibold text-foreground">Fahrtenbuch {selectedYear}</h2>
-              <p className="text-xs text-muted-foreground">{filteredMealEntries.length} Einträge</p>
+              <p className="text-xs text-muted-foreground">{tripEntries.length} Einträge</p>
             </div>
           </div>
           <button 
@@ -179,7 +179,7 @@ export default function FullScreenTableView({
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/30">
-                {filteredMealEntries.length === 0 ? (
+                {tripEntries.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="p-12 text-center">
                       <div className="flex flex-col items-center gap-3">
@@ -263,12 +263,12 @@ export default function FullScreenTableView({
                               </td>
                               <td className="p-4">
                                 <span className="inline-flex items-center px-2 py-1 rounded-md bg-muted/50 text-xs font-medium text-muted-foreground">
-                                  {entry.duration.toFixed(1)} h
+                                  {(entry.duration || 0).toFixed(1)} h
                                 </span>
                               </td>
                               <td className="p-4 text-right">
                                 <span className={`font-medium ${entry.deductible > 0 ? 'text-emerald-600' : 'text-muted-foreground'}`}>
-                                  {entry.deductible.toFixed(2)} €
+                                  {(entry.deductible || 0).toFixed(2)} €
                                 </span>
                               </td>
                               <td className="p-4 text-right">

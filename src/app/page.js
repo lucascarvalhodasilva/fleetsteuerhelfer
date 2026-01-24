@@ -7,7 +7,7 @@ export default function Dashboard() {
   const {
     selectedYear,
     grandTotal,
-    totalMeals,
+    totalTrips,
     totalMileage,
     totalEquipment,
     totalEmployerReimbursement,
@@ -24,7 +24,7 @@ export default function Dashboard() {
         <DashboardKPIs 
           selectedYear={selectedYear}
           grandTotal={grandTotal}
-          totalMeals={totalMeals}
+          totalTrips={totalTrips}
           totalMileage={totalMileage}
           totalEquipment={totalEquipment}
           totalEmployerReimbursement={totalEmployerReimbursement}

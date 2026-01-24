@@ -29,46 +29,69 @@ export const useEquipmentList = () => {
     }
   };
 
+  // Calculate deductible amount for each entry based on depreciation rules
+  const calculateDeductible = (entry, forYear) => {
+    const purchaseDate = new Date(entry.date);
+    const purchaseYear = purchaseDate.getFullYear();
+    const price = parseFloat(entry.price);
+    const year = forYear || purchaseYear;
+    
+    // 1. GWG (<= Limit): Full amount in purchase year only
+    if (price <= (taxRates?.gwgLimit || 952)) {
+      return year === purchaseYear ? price : 0;
+    }
+
+    // 2. Depreciating Assets (> Limit)
+    const usefulLifeYears = 3;
+    const endYear = purchaseYear + usefulLifeYears; 
+    
+    if (year < purchaseYear || year > endYear) return 0;
+
+    let monthsInYear = 0;
+    
+    if (year === purchaseYear) {
+      monthsInYear = 12 - purchaseDate.getMonth();
+    } else if (year < endYear) {
+      monthsInYear = 12;
+    } else if (year === endYear) {
+      monthsInYear = purchaseDate.getMonth();
+    }
+
+    if (monthsInYear <= 0) return 0;
+
+    const monthlyDepreciation = price / (usefulLifeYears * 12);
+    return parseFloat((monthlyDepreciation * monthsInYear).toFixed(2));
+  };
+
   const filteredEquipmentEntries = useMemo(() => {
     return equipmentEntries.map(entry => {
       const purchaseDate = new Date(entry.date);
       const purchaseYear = purchaseDate.getFullYear();
-      const currentYear = parseInt(selectedYear);
       const price = parseFloat(entry.price);
       
-      // 1. GWG (<= Limit): Show only in purchase year (full amount)
+      // Calculate deductible for the entry's purchase year for display
+      const deductible = calculateDeductible(entry, purchaseYear);
+      
+      // For GWG items, show full amount
       if (price <= (taxRates?.gwgLimit || 952)) {
-        return purchaseYear === currentYear ? entry : null;
+        return {
+          ...entry,
+          deductibleAmount: price,
+          status: 'GWG (Sofortabzug)'
+        };
       }
 
-      // 2. Depreciating Assets (> Limit)
+      // For depreciating assets, calculate based on purchase year
       const usefulLifeYears = 3;
-      const endYear = purchaseYear + usefulLifeYears; 
-      
-      if (currentYear < purchaseYear || currentYear > endYear) return null;
-
-      let monthsInCurrentYear = 0;
-      
-      if (currentYear === purchaseYear) {
-        monthsInCurrentYear = 12 - purchaseDate.getMonth();
-      } else if (currentYear < endYear) {
-        monthsInCurrentYear = 12;
-      } else if (currentYear === endYear) {
-        monthsInCurrentYear = purchaseDate.getMonth();
-      }
-
-      if (monthsInCurrentYear <= 0) return null;
-
-      const monthlyDepreciation = price / (usefulLifeYears * 12);
-      const deductible = monthlyDepreciation * monthsInCurrentYear;
+      const monthsInPurchaseYear = 12 - purchaseDate.getMonth();
 
       return {
         ...entry,
-        deductibleAmount: parseFloat(deductible.toFixed(2)),
-        status: `Abschreibung ${currentYear} (${monthsInCurrentYear} Mon.)`
+        deductibleAmount: deductible,
+        status: `Abschreibung ${purchaseYear} (${monthsInPurchaseYear} Mon.)`
       };
-    }).filter(Boolean).sort((a, b) => new Date(b.date) - new Date(a.date));
-  }, [equipmentEntries, selectedYear, taxRates]);
+    }).sort((a, b) => new Date(b.date) - new Date(a.date));
+  }, [equipmentEntries, taxRates]);
 
   return {
     filteredEquipmentEntries,

@@ -12,7 +12,7 @@ export const ENABLE_MOCK_DATA = true;
  * Local storage keys
  */
 export const STORAGE_KEYS = {
-  MEAL_ENTRIES: 'mealEntries',
+  TRIP_ENTRIES: 'mealEntries',
   MILEAGE_ENTRIES: 'mileageEntries',
   EQUIPMENT_ENTRIES: 'equipmentEntries',
   EXPENSE_ENTRIES: 'expenseEntries',
@@ -20,7 +20,7 @@ export const STORAGE_KEYS = {
   DEFAULT_COMMUTE: 'defaultCommute',
   TAX_RATES: 'taxRates',
   SELECTED_YEAR: 'selectedYear',
-  MEALS_FORM_DATA: 'MEALS_FORM_DATA'
+  TRIPS_FORM_DATA: 'TRIPS_FORM_DATA'
 };
 
 /**

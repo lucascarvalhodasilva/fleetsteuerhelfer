@@ -7,8 +7,8 @@ import { Filesystem, Directory } from '@capacitor/filesystem';
  */
 export const useTripList = () => {
   const { 
-    mealEntries, 
-    deleteMealEntry, 
+    tripEntries, 
+    deleteTripEntry, 
     mileageEntries, 
     deleteMileageEntry, 
     selectedYear 
@@ -38,23 +38,22 @@ export const useTripList = () => {
     }
   };
 
-  const filteredMealEntries = useMemo(() => 
-    mealEntries
-      .filter(entry => new Date(entry.date).getFullYear() === parseInt(selectedYear))
+  const tripEntriesSorted = useMemo(() => 
+    tripEntries
       .sort((a, b) => new Date(b.date) - new Date(a.date)), 
-  [mealEntries, selectedYear]);
+  [tripEntries]);
 
   const handleDeleteEntry = (entryId, entryDate, entryEndDate) => {
-    deleteMealEntry(entryId);
+    deleteTripEntry(entryId);
     
-    // Delete by relatedMealId
-    const relatedMileage = mileageEntries.filter(m => m.relatedMealId === entryId);
+    // Delete by relatedTripId
+    const relatedMileage = mileageEntries.filter(m => m.relatedTripId === entryId);
     if (relatedMileage.length > 0) {
       relatedMileage.forEach(m => deleteMileageEntry(m.id));
     } else {
       // Fallback for legacy entries
       const legacyMileage = mileageEntries.filter(m => 
-        !m.relatedMealId && 
+        !m.relatedTripId && 
         (m.date === entryDate || (entryEndDate && m.date === entryEndDate))
       );
       legacyMileage.forEach(m => deleteMileageEntry(m.id));
@@ -62,7 +61,7 @@ export const useTripList = () => {
   };
 
   return {
-    filteredMealEntries,
+    tripEntries: tripEntriesSorted,
     mileageEntries,
     handleDeleteEntry,
     selectedYear,

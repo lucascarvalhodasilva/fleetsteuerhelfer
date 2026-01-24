@@ -2,12 +2,12 @@ import { useMemo } from 'react';
 import { useAppContext } from '@/context/AppContext';
 
 export const useDashboard = () => {
-  const { mealEntries, mileageEntries, equipmentEntries, expenseEntries, monthlyEmployerExpenses, selectedYear, taxRates } = useAppContext();
+  const { tripEntries, mileageEntries, equipmentEntries, expenseEntries, monthlyEmployerExpenses, selectedYear, taxRates } = useAppContext();
 
   // Filter entries by selected year
-  const filteredMeals = useMemo(() => 
-    mealEntries.filter(e => new Date(e.date).getFullYear() === selectedYear),
-  [mealEntries, selectedYear]);
+  const filteredTrips = useMemo(() => 
+    tripEntries.filter(e => new Date(e.date).getFullYear() === selectedYear),
+  [tripEntries, selectedYear]);
 
   const filteredMileage = useMemo(() => 
     mileageEntries.filter(e => new Date(e.date).getFullYear() === selectedYear),
@@ -21,9 +21,9 @@ export const useDashboard = () => {
     (monthlyEmployerExpenses || []).filter(e => e.year === selectedYear),
   [monthlyEmployerExpenses, selectedYear]);
 
-  const totalMeals = useMemo(() => 
-    filteredMeals.reduce((sum, entry) => sum + entry.deductible, 0),
-  [filteredMeals]);
+  const totalTrips = useMemo(() => 
+    filteredTrips.reduce((sum, entry) => sum + entry.deductible, 0),
+  [filteredTrips]);
 
   const totalMileage = useMemo(() => 
     filteredMileage.reduce((sum, entry) => sum + entry.allowance, 0),
@@ -66,8 +66,8 @@ export const useDashboard = () => {
     filteredMonthlyExpenses.reduce((sum, entry) => sum + entry.amount, 0),
   [filteredMonthlyExpenses]);
   
-  // Grand Total (Absetzbar) = (Meals + Mileage + Equipment) - Employer Reimbursements
-  const grandTotal = (totalMeals + totalMileage + totalEquipment) - totalEmployerReimbursement;
+  // Grand Total (Absetzbar) = (Trips + Mileage + Equipment) - Employer Reimbursements
+  const grandTotal = (totalTrips + totalMileage + totalEquipment) - totalEmployerReimbursement;
 
   // KPI Calculations for Expenses vs Allowances
   const totalExpenses = useMemo(() => 
@@ -79,17 +79,17 @@ export const useDashboard = () => {
 
   // Combine and sort recent activities
   const recentActivities = useMemo(() => [
-    ...mealEntries.map(e => ({ ...e, type: 'Verpflegung', amount: e.deductible })),
+    ...tripEntries.map(e => ({ ...e, type: 'Verpflegung', amount: e.deductible })),
     ...mileageEntries.map(e => ({ ...e, type: 'Fahrt', amount: e.allowance })),
     ...equipmentEntries.map(e => ({ ...e, type: 'Arbeitsmittel', amount: e.deductibleAmount }))
   ]
   .sort((a, b) => new Date(b.date) - new Date(a.date))
-  .slice(0, 5), [mealEntries, mileageEntries, equipmentEntries]);
+  .slice(0, 5), [tripEntries, mileageEntries, equipmentEntries]);
 
   return {
     selectedYear,
     grandTotal,
-    totalMeals,
+    totalTrips,
     totalMileage,
     totalEquipment,
     totalEmployerReimbursement,

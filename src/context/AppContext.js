@@ -10,7 +10,7 @@ const AppContext = createContext();
 const ENABLE_MOCK_DATA = true; // Set to false to disable mock data
 
 const generateMockData = (currentYear) => {
-  const mockMealEntries = [
+  const mockTripEntries = [
     // January trips
     {
       id: 1001,
@@ -138,28 +138,28 @@ const generateMockData = (currentYear) => {
 
   const mockMileageEntries = [
     // January
-    { id: 2001, date: `${currentYear}-01-06`, distance: 285, allowance: 85.50, vehicleType: 'car', relatedMealId: 1001, destination: 'München' },
-    { id: 2002, date: `${currentYear}-01-08`, distance: 285, allowance: 85.50, vehicleType: 'car', relatedMealId: 1001, destination: 'München (Rückfahrt)' },
-    { id: 2003, date: `${currentYear}-01-15`, distance: 210, allowance: 63.00, vehicleType: 'car', relatedMealId: 1002, destination: 'Stuttgart' },
-    { id: 2004, date: `${currentYear}-01-13`, distance: 95, allowance: 28.50, vehicleType: 'car', relatedMealId: 1010, destination: 'Mannheim' },
-    { id: 2005, date: `${currentYear}-01-17`, distance: 320, allowance: 96.00, vehicleType: 'car', relatedMealId: 1011, destination: 'Leipzig' },
-    { id: 2006, date: `${currentYear}-01-19`, distance: 320, allowance: 96.00, vehicleType: 'car', relatedMealId: 1011, destination: 'Leipzig (Rückfahrt)' },
+    { id: 2001, date: `${currentYear}-01-06`, distance: 285, allowance: 85.50, vehicleType: 'car', relatedTripId: 1001, destination: 'München' },
+    { id: 2002, date: `${currentYear}-01-08`, distance: 285, allowance: 85.50, vehicleType: 'car', relatedTripId: 1001, destination: 'München (Rückfahrt)' },
+    { id: 2003, date: `${currentYear}-01-15`, distance: 210, allowance: 63.00, vehicleType: 'car', relatedTripId: 1002, destination: 'Stuttgart' },
+    { id: 2004, date: `${currentYear}-01-13`, distance: 95, allowance: 28.50, vehicleType: 'car', relatedTripId: 1010, destination: 'Mannheim' },
+    { id: 2005, date: `${currentYear}-01-17`, distance: 320, allowance: 96.00, vehicleType: 'car', relatedTripId: 1011, destination: 'Leipzig' },
+    { id: 2006, date: `${currentYear}-01-19`, distance: 320, allowance: 96.00, vehicleType: 'car', relatedTripId: 1011, destination: 'Leipzig (Rückfahrt)' },
     // February
-    { id: 2007, date: `${currentYear}-02-03`, distance: 470, allowance: 141.00, vehicleType: 'car', relatedMealId: 1003, destination: 'Hamburg' },
-    { id: 2008, date: `${currentYear}-02-05`, distance: 470, allowance: 141.00, vehicleType: 'car', relatedMealId: 1003, destination: 'Hamburg (Rückfahrt)' },
-    { id: 2009, date: `${currentYear}-02-20`, distance: 180, allowance: 54.00, vehicleType: 'car', relatedMealId: 1004, destination: 'Frankfurt' },
+    { id: 2007, date: `${currentYear}-02-03`, distance: 470, allowance: 141.00, vehicleType: 'car', relatedTripId: 1003, destination: 'Hamburg' },
+    { id: 2008, date: `${currentYear}-02-05`, distance: 470, allowance: 141.00, vehicleType: 'car', relatedTripId: 1003, destination: 'Hamburg (Rückfahrt)' },
+    { id: 2009, date: `${currentYear}-02-20`, distance: 180, allowance: 54.00, vehicleType: 'car', relatedTripId: 1004, destination: 'Frankfurt' },
     // March
-    { id: 2010, date: `${currentYear}-03-10`, distance: 550, allowance: 165.00, vehicleType: 'car', relatedMealId: 1005, destination: 'Berlin' },
-    { id: 2011, date: `${currentYear}-03-14`, distance: 550, allowance: 165.00, vehicleType: 'car', relatedMealId: 1005, destination: 'Berlin (Rückfahrt)' },
+    { id: 2010, date: `${currentYear}-03-10`, distance: 550, allowance: 165.00, vehicleType: 'car', relatedTripId: 1005, destination: 'Berlin' },
+    { id: 2011, date: `${currentYear}-03-14`, distance: 550, allowance: 165.00, vehicleType: 'car', relatedTripId: 1005, destination: 'Berlin (Rückfahrt)' },
     // April
-    { id: 2012, date: `${currentYear}-04-07`, distance: 150, allowance: 45.00, vehicleType: 'car', relatedMealId: 1006, destination: 'Köln' },
-    { id: 2013, date: `${currentYear}-04-22`, distance: 220, allowance: 66.00, vehicleType: 'car', relatedMealId: 1007, destination: 'Düsseldorf' },
-    { id: 2014, date: `${currentYear}-04-24`, distance: 220, allowance: 66.00, vehicleType: 'car', relatedMealId: 1007, destination: 'Düsseldorf (Rückfahrt)' },
+    { id: 2012, date: `${currentYear}-04-07`, distance: 150, allowance: 45.00, vehicleType: 'car', relatedTripId: 1006, destination: 'Köln' },
+    { id: 2013, date: `${currentYear}-04-22`, distance: 220, allowance: 66.00, vehicleType: 'car', relatedTripId: 1007, destination: 'Düsseldorf' },
+    { id: 2014, date: `${currentYear}-04-24`, distance: 220, allowance: 66.00, vehicleType: 'car', relatedTripId: 1007, destination: 'Düsseldorf (Rückfahrt)' },
     // May
-    { id: 2015, date: `${currentYear}-05-12`, distance: 165, allowance: 49.50, vehicleType: 'car', relatedMealId: 1008, destination: 'Nürnberg' },
+    { id: 2015, date: `${currentYear}-05-12`, distance: 165, allowance: 49.50, vehicleType: 'car', relatedTripId: 1008, destination: 'Nürnberg' },
     // June
-    { id: 2016, date: `${currentYear}-06-02`, distance: 420, allowance: 126.00, vehicleType: 'car', relatedMealId: 1009, destination: 'Wien' },
-    { id: 2017, date: `${currentYear}-06-06`, distance: 420, allowance: 126.00, vehicleType: 'car', relatedMealId: 1009, destination: 'Wien (Rückfahrt)' }
+    { id: 2016, date: `${currentYear}-06-02`, distance: 420, allowance: 126.00, vehicleType: 'car', relatedTripId: 1009, destination: 'Wien' },
+    { id: 2017, date: `${currentYear}-06-06`, distance: 420, allowance: 126.00, vehicleType: 'car', relatedTripId: 1009, destination: 'Wien (Rückfahrt)' }
   ];
 
   const mockMonthlyExpenses = [
@@ -179,13 +179,30 @@ const generateMockData = (currentYear) => {
   ];
 
   const mockExpenseEntries = [
-    { id: 5001, date: `${currentYear}-01-20`, description: 'Fachliteratur Steuerwesen', amount: 45.00, category: 'Bücher' },
-    { id: 5002, date: `${currentYear}-02-10`, description: 'Office 365 Jahresabo', amount: 99.00, category: 'Software' },
-    { id: 5003, date: `${currentYear}-03-15`, description: 'Druckerpapier & Toner', amount: 78.00, category: 'Büromaterial' }
+    { id: 5001, date: `${currentYear}-01-05`, description: 'Fachliteratur Steuerwesen', amount: 45.00, category: 'Bücher' },
+    { id: 5002, date: `${currentYear}-01-15`, description: 'Office 365 Jahresabo', amount: 99.00, category: 'Software' },
+    { id: 5003, date: `${currentYear}-01-22`, description: 'Druckerpapier & Toner', amount: 78.00, category: 'Büromaterial' },
+    { id: 5004, date: `${currentYear}-02-03`, description: 'USB-C Adapter', amount: 29.90, category: 'IT-Zubehör' },
+    { id: 5005, date: `${currentYear}-02-14`, description: 'Visitenkarten 500 Stück', amount: 35.00, category: 'Marketing' },
+    { id: 5006, date: `${currentYear}-02-28`, description: 'Webcam HD Logitech', amount: 89.00, category: 'IT-Zubehör' },
+    { id: 5007, date: `${currentYear}-03-07`, description: 'Arbeitshandschuhe 10er Pack', amount: 24.50, category: 'Arbeitskleidung' },
+    { id: 5008, date: `${currentYear}-03-18`, description: 'Fachliteratur Projektmanagement', amount: 52.00, category: 'Bücher' },
+    { id: 5009, date: `${currentYear}-03-25`, description: 'Bildschirmreiniger Set', amount: 15.90, category: 'Büromaterial' },
+    { id: 5010, date: `${currentYear}-04-02`, description: 'Kabelmanagement Schreibtisch', amount: 19.99, category: 'Büromaterial' },
+    { id: 5011, date: `${currentYear}-04-12`, description: 'Präsentationsmaterial', amount: 67.50, category: 'Marketing' },
+    { id: 5012, date: `${currentYear}-04-28`, description: 'Antivirensoftware 1 Jahr', amount: 39.99, category: 'Software' },
+    { id: 5013, date: `${currentYear}-05-08`, description: 'Schreibtischlampe LED', amount: 49.90, category: 'Büromöbel' },
+    { id: 5014, date: `${currentYear}-05-19`, description: 'Bluetooth Maus', amount: 34.99, category: 'IT-Zubehör' },
+    { id: 5015, date: `${currentYear}-05-30`, description: 'Kalender & Planer 2026', amount: 18.50, category: 'Büromaterial' },
+    { id: 5016, date: `${currentYear}-06-05`, description: 'Kopfhörer Noise Cancelling', amount: 159.00, category: 'IT-Zubehör' },
+    { id: 5017, date: `${currentYear}-06-16`, description: 'Cloud-Speicher Jahresabo', amount: 119.00, category: 'Software' },
+    { id: 5018, date: `${currentYear}-06-27`, description: 'Dokumentenhalter', amount: 22.90, category: 'Büromaterial' },
+    { id: 5019, date: `${currentYear}-07-10`, description: 'Sicherheitsschuhe S3', amount: 89.00, category: 'Arbeitskleidung' },
+    { id: 5020, date: `${currentYear}-07-21`, description: 'VPN Service 1 Jahr', amount: 59.00, category: 'Software' }
   ];
 
   return {
-    mealEntries: mockMealEntries,
+    tripEntries: mockTripEntries,
     mileageEntries: mockMileageEntries,
     monthlyEmployerExpenses: mockMonthlyExpenses,
     equipmentEntries: mockEquipmentEntries,
@@ -213,7 +230,7 @@ const deleteReceiptFiles = async (receiptFileName, dateStr) => {
 };
 
 export function AppProvider({ children }) {
-  const [mealEntries, setMealEntries] = useState([]);
+  const [tripEntries, setTripEntries] = useState([]);
   const [mileageEntries, setMileageEntries] = useState([]);
   const [equipmentEntries, setEquipmentEntries] = useState([]);
   const [expenseEntries, setExpenseEntries] = useState([]);
@@ -237,7 +254,7 @@ export function AppProvider({ children }) {
 
   // Load from local storage on mount
   useEffect(() => {
-    const storedMeals = localStorage.getItem('mealEntries');
+    const storedTrips = localStorage.getItem('mealEntries');
     const storedMileage = localStorage.getItem('mileageEntries');
     const storedEquipment = localStorage.getItem('equipmentEntries');
     const storedExpenses = localStorage.getItem('expenseEntries');
@@ -247,11 +264,11 @@ export function AppProvider({ children }) {
     const storedYear = localStorage.getItem('selectedYear');
 
     // Check if we have existing data
-    const hasExistingData = storedMeals && JSON.parse(storedMeals).length > 0;
+    const hasExistingData = storedTrips && JSON.parse(storedTrips).length > 0;
 
     if (hasExistingData) {
       // Load existing data from localStorage
-      if (storedMeals) setMealEntries(JSON.parse(storedMeals));
+      if (storedTrips) setTripEntries(JSON.parse(storedTrips));
       if (storedMileage) setMileageEntries(JSON.parse(storedMileage));
       if (storedEquipment) setEquipmentEntries(JSON.parse(storedEquipment));
       if (storedExpenses) setExpenseEntries(JSON.parse(storedExpenses));
@@ -259,7 +276,7 @@ export function AppProvider({ children }) {
     } else if (ENABLE_MOCK_DATA) {
       // Load mock data for development
       const mockData = generateMockData(new Date().getFullYear());
-      setMealEntries(mockData.mealEntries);
+      setTripEntries(mockData.tripEntries);
       setMileageEntries(mockData.mileageEntries);
       setMonthlyEmployerExpenses(mockData.monthlyEmployerExpenses);
       setEquipmentEntries(mockData.equipmentEntries);
@@ -276,8 +293,8 @@ export function AppProvider({ children }) {
 
   // Save to local storage on change
   useEffect(() => {
-    localStorage.setItem('mealEntries', JSON.stringify(mealEntries));
-  }, [mealEntries]);
+    localStorage.setItem('mealEntries', JSON.stringify(tripEntries));
+  }, [tripEntries]);
 
   useEffect(() => {
     localStorage.setItem('mileageEntries', JSON.stringify(mileageEntries));
@@ -307,17 +324,17 @@ export function AppProvider({ children }) {
     localStorage.setItem('selectedYear', JSON.stringify(selectedYear));
   }, [selectedYear]);
 
-  const addMealEntry = (entry) => {
+  const addTripEntry = (entry) => {
     const newEntry = { ...entry, id: entry.id || Date.now() };
-    setMealEntries(prev => [...prev, newEntry]);
+    setTripEntries(prev => [...prev, newEntry]);
   };
 
-  const deleteMealEntry = (id) => {
-    setMealEntries(prev => prev.filter(e => e.id !== id));
+  const deleteTripEntry = (id) => {
+    setTripEntries(prev => prev.filter(e => e.id !== id));
   };
 
-  const updateMealEntry = (id, updatedEntry) => {
-    setMealEntries(prev => prev.map(entry => entry.id === id ? { ...entry, ...updatedEntry } : entry));
+  const updateTripEntry = (id, updatedEntry) => {
+    setTripEntries(prev => prev.map(entry => entry.id === id ? { ...entry, ...updatedEntry } : entry));
   };
 
   const addMileageEntry = (entry) => {
@@ -400,7 +417,7 @@ export function AppProvider({ children }) {
     if (!data) return false;
     
     try {
-      if (data.mealEntries) setMealEntries(data.mealEntries);
+      if (data.mealEntries) setTripEntries(data.mealEntries);
       if (data.mileageEntries) setMileageEntries(data.mileageEntries);
       if (data.equipmentEntries) setEquipmentEntries(data.equipmentEntries);
       if (data.expenseEntries) setExpenseEntries(data.expenseEntries);
@@ -417,7 +434,7 @@ export function AppProvider({ children }) {
 
   return (
     <AppContext.Provider value={{
-      mealEntries, addMealEntry, deleteMealEntry, updateMealEntry,
+      tripEntries, addTripEntry, deleteTripEntry, updateTripEntry,
       mileageEntries, addMileageEntry, deleteMileageEntry,
       equipmentEntries, addEquipmentEntry, deleteEquipmentEntry, updateEquipmentEntry,
       expenseEntries, addExpenseEntry, deleteExpenseEntry,
@@ -431,8 +448,8 @@ export function AppProvider({ children }) {
         const currentYear = new Date().getFullYear();
         const yearsSet = new Set([currentYear]);
         
-        // Extract years from meal entries
-        mealEntries.forEach(entry => {
+        // Extract years from trip entries
+        tripEntries.forEach(entry => {
           if (entry.date) yearsSet.add(new Date(entry.date).getFullYear());
           if (entry.endDate) yearsSet.add(new Date(entry.endDate).getFullYear());
         });

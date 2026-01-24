@@ -2,19 +2,18 @@ import React, { useEffect, useRef, useState } from 'react';
 import NumberInput from '@/components/shared/NumberInput';
 import CustomDatePicker from '@/components/shared/CustomDatePicker';
 import SuggestionInput from '@/components/shared/SuggestionInput';
-import { CameraSource } from '@capacitor/camera';
+import ReceiptUpload from '@/components/shared/ReceiptUpload';
 
 export default function EquipmentForm({ 
   formData, 
   setFormData, 
   handleSubmit, 
-  tempReceipt, 
-  setTempReceipt, 
+  tempReceipt,
+  tempReceiptType = 'image',
   removeReceipt,
-  showCameraOptions, 
-  setShowCameraOptions, 
-  nameSuggestions, 
   takePicture,
+  pickFile,
+  nameSuggestions, 
   submitError,
   editingId,
   cancelEdit,
@@ -34,134 +33,165 @@ export default function EquipmentForm({
   return (
     <div 
       ref={formRef}
-      className={`card-modern transition-all duration-1000 ${
-        isFlashing ? 'ring-2 ring-primary shadow-lg shadow-primary/20' : ''
+      className={`rounded-2xl border border-border/50 bg-card/95 backdrop-blur-md shadow-2xl overflow-hidden transition-all duration-300 max-h-[80vh] flex flex-col ${
+        isFlashing ? 'ring-2 ring-primary/50' : ''
       }`}
     >
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold text-foreground">
-          {editingId ? 'Eintrag bearbeiten' : 'Neuer Eintrag'}
-        </h2>
-        {editingId && (
-          <button 
-            type="button"
-            onClick={cancelEdit}
-            className="text-xs font-medium text-muted-foreground hover:text-foreground bg-secondary/50 hover:bg-secondary px-3 py-1.5 rounded-full transition-colors"
-          >
-            Abbrechen
-          </button>
-        )}
-      </div>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-2">
-          <label className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Bezeichnung</label>
-          <SuggestionInput
-            className="input-modern text-sm"
-            value={formData.name}
-            onChange={e => setFormData({...formData, name: e.target.value})}
-            suggestions={nameSuggestions}
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Kaufdatum</label>
-          <CustomDatePicker
-            className="input-modern text-sm"
-            value={formData.date}
-            onChange={e => setFormData({...formData, date: e.target.value})}
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Preis (Brutto €)</label>
-          <NumberInput
-            step="0.01"
-            className="input-modern text-sm"
-            value={formData.price}
-            onChange={e => setFormData({...formData, price: e.target.value})}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-xs text-muted-foreground font-medium uppercase tracking-wider block mb-2">Beleg</label>
-          <button 
-            type="button" 
-            onClick={() => setShowCameraOptions(true)} 
-            className="w-full py-2.5 rounded-lg border border-dashed border-border hover:border-primary hover:bg-secondary/50 text-muted-foreground hover:text-primary transition-all flex items-center justify-center gap-2 text-sm font-medium"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Beleg hinzufügen
-          </button>
-          {tempReceipt && (
-            <div className="relative w-24 h-24 mt-2 group">
-              <img 
-                src={`data:image/jpeg;base64,${tempReceipt}`} 
-                alt="Beleg Vorschau" 
-                className="w-full h-full object-cover rounded-lg border border-border shadow-sm"
-              />
-              <button 
-                type="button" 
-                onClick={removeReceipt}
-                className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full w-6 h-6 flex items-center justify-center shadow-md hover:bg-destructive/90 transition-colors"
-              >
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          )}
-        </div>
-
-        <button 
-          type="submit" 
-          disabled={editingId && !hasChanges}
-          className={`w-full btn-primary py-3 mt-4 shadow-lg shadow-primary/20 ${editingId && !hasChanges ? 'opacity-50 cursor-not-allowed' : ''}`}
-        >
-          {editingId ? 'Aktualisieren' : 'Hinzufügen'}
-        </button>
-
-        {submitError && (
-          <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-sm text-destructive animate-in fade-in slide-in-from-top-2">
-            ⚠️ {submitError}
+      {/* Modal Header */}
+      <div className="flex justify-between items-center p-4 border-b border-border/50 bg-muted/30 shrink-0">
+        <div className="flex items-center gap-3">
+          <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${editingId ? 'bg-amber-500/10 text-amber-600' : 'bg-blue-500/10 text-blue-600'}`}>
+            {editingId ? (
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            )}
           </div>
-        )}
+          <div>
+            <h2 className="text-sm font-semibold text-foreground">
+              {editingId ? 'Arbeitsmittel bearbeiten' : 'Neues Arbeitsmittel'}
+            </h2>
+            <p className="text-[10px] text-muted-foreground">
+              {editingId ? 'Änderungen vornehmen' : 'Arbeitsmittel erfassen'}
+            </p>
+          </div>
+        </div>
+        <button 
+          type="button"
+          onClick={cancelEdit}
+          className="w-8 h-8 rounded-lg bg-white/60 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form id="equipment-form" onSubmit={handleSubmit} className="p-4 space-y-5 overflow-y-auto flex-1">
+        
+        {/* Section: Arbeitsmittel Details */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-md bg-blue-500/10 flex items-center justify-center">
+              <svg className="w-3 h-3 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h3 className="text-xs font-semibold text-foreground">Arbeitsmittel Details</h3>
+          </div>
+
+          {/* Name Field */}
+          <div className="p-3 rounded-xl border border-border/30">
+            <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide mb-2 block">
+              Bezeichnung
+            </label>
+            <SuggestionInput
+              className="w-full px-3 py-2.5 bg-card rounded-lg border border-border/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent text-sm text-foreground placeholder:text-muted-foreground transition-colors"
+              value={formData.name}
+              onChange={e => setFormData({...formData, name: e.target.value})}
+              suggestions={nameSuggestions}
+              placeholder="z.B. Laptop, Monitor"
+            />
+          </div>
+
+          {/* Date and Price Row */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="p-3 rounded-xl border border-border/30">
+              <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide mb-2 block">
+                Kaufdatum
+              </label>
+              <CustomDatePicker
+                value={formData.date}
+                onChange={e => setFormData({...formData, date: e.target.value})}
+                className="w-full"
+              />
+            </div>
+            <div className="p-3 rounded-xl border border-border/30">
+              <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide mb-2 block">
+                Preis (Brutto €)
+              </label>
+              <NumberInput
+                step="0.01"
+                value={formData.price}
+                onChange={e => setFormData({...formData, price: e.target.value})}
+                className="w-full px-3 py-2.5 bg-card rounded-lg border border-border/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent text-sm text-foreground"
+                placeholder="0.00"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Section: Beleg */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-md bg-blue-500/10 flex items-center justify-center">
+              <svg className="w-3 h-3 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            <h3 className="text-xs font-semibold text-foreground">Beleg (optional)</h3>
+          </div>
+
+          <ReceiptUpload
+            receipt={tempReceipt}
+            receiptType={tempReceiptType}
+            onTakePicture={takePicture}
+            onPickFile={pickFile}
+            onRemove={removeReceipt}
+            accentColor="blue"
+            showLabel={false}
+          />
+        </div>
       </form>
 
-      {/* Camera Options Modal */}
-      {showCameraOptions && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-card border border-border rounded-xl shadow-lg w-full max-w-sm p-6 animate-in zoom-in-95 duration-200">
-            <h3 className="text-lg font-semibold mb-4 text-foreground">Beleg hinzufügen</h3>
-            <div className="space-y-3">
-              <button
-                onClick={() => takePicture && takePicture(CameraSource.Camera)}
-                className="w-full p-4 rounded-lg bg-secondary/50 hover:bg-secondary border border-border flex items-center gap-3 transition-all"
-              >
-                <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <span className="font-medium">Kamera</span>
-              </button>
-              <button
-                onClick={() => takePicture && takePicture(CameraSource.Photos)}
-                className="w-full p-4 rounded-lg bg-secondary/50 hover:bg-secondary border border-border flex items-center gap-3 transition-all"
-              >
-                <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span className="font-medium">Galerie</span>
-              </button>
-              <button
-                onClick={() => setShowCameraOptions(false)}
-                className="w-full p-3 rounded-lg text-muted-foreground hover:bg-secondary/50 transition-colors mt-2"
-              >
-                Abbrechen
-              </button>
-            </div>
+      {/* Error Message - Sticky above button */}
+      {submitError && (
+        <div className="px-4 pb-2 shrink-0 border-t border-border/50 pt-3 bg-card/95">
+          <div className="p-3 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 flex items-start gap-2">
+            <svg className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-xs text-red-600 dark:text-red-400">{submitError}</p>
           </div>
         </div>
       )}
+
+      {/* Footer with Submit Button */}
+      <div className={`border-t border-border/50 bg-muted/30 p-4 shrink-0 ${submitError ? 'border-t-0 pt-2' : ''}`}>
+        <button 
+          type="submit" 
+          form="equipment-form"
+          disabled={editingId && !hasChanges}
+          className={`w-full px-6 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 text-sm shadow-sm ${
+            editingId && !hasChanges 
+              ? 'bg-muted text-muted-foreground cursor-not-allowed' 
+              : editingId
+                ? 'bg-amber-500 hover:bg-amber-600 text-white'
+                : 'bg-blue-500 hover:bg-blue-600 text-white'
+          }`}
+        >
+          {editingId ? (
+            <>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Aktualisieren
+            </>
+          ) : (
+            <>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              Hinzufügen
+            </>
+          )}
+        </button>
+      </div>
     </div>
   );
 }

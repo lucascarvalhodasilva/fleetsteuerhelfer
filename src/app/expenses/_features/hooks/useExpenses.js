@@ -343,9 +343,8 @@ export const useExpenses = () => {
   };
 
   const filteredEntries = useMemo(() => (expenseEntries || [])
-    .filter(entry => new Date(entry.date).getFullYear() === parseInt(selectedYear))
     .sort((a, b) => new Date(b.date) - new Date(a.date)), 
-  [expenseEntries, selectedYear]);
+  [expenseEntries]);
 
   const monthlyExpenses = useMemo(() => {
     const months = {};

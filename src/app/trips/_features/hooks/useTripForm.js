@@ -9,10 +9,10 @@ import { Filesystem, Directory } from '@capacitor/filesystem';
  */
 export const useTripForm = () => {
   const { 
-    mealEntries,
-    addMealEntry, 
+    tripEntries,
+    addTripEntry, 
     addMileageEntry, 
-    deleteMealEntry,
+    deleteTripEntry,
     deleteMileageEntry,
     mileageEntries,
     taxRates, 
@@ -21,6 +21,7 @@ export const useTripForm = () => {
   } = useAppContext();
 
   const [formData, setFormData] = useState({
+    destination: '',
     date: '',
     endDate: '',
     startTime: '',
@@ -44,7 +45,7 @@ export const useTripForm = () => {
 
   // Load saved form data from local storage (excluding dates - they should start empty)
   useEffect(() => {
-    const savedData = localStorage.getItem('MEALS_FORM_DATA');
+    const savedData = localStorage.getItem('TRIPS_FORM_DATA');
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
@@ -69,7 +70,7 @@ export const useTripForm = () => {
     const timer = setTimeout(() => {
       // Don't save commute settings to persistence
       const { commute, ...dataToSave } = formData;
-      localStorage.setItem('MEALS_FORM_DATA', JSON.stringify(dataToSave));
+      localStorage.setItem('TRIPS_FORM_DATA', JSON.stringify(dataToSave));
     }, 500);
 
     return () => clearTimeout(timer);
@@ -313,7 +314,7 @@ export const useTripForm = () => {
     const newStart = new Date(`${formData.date}T${formData.startTime}`);
     const newEnd = new Date(`${finalEndDate}T${formData.endTime}`);
 
-    const hasOverlap = mealEntries.some(entry => {
+    const hasOverlap = tripEntries.some(entry => {
       if (editingId && entry.id === editingId) return false;
       const entryEndDate = entry.endDate || entry.date;
       const entryStart = new Date(`${entry.date}T${entry.startTime}`);
@@ -330,19 +331,19 @@ export const useTripForm = () => {
     const { duration, rate } = calculateAllowance(formData.date, formData.startTime, finalEndDate, formData.endTime, taxRates);
     const deductible = Math.max(0, rate - parseFloat(formData.employerExpenses));
 
-    const mealId = editingId || Date.now();
+    const tripId = editingId || Date.now();
 
-    // If editing: remove existing meal + related mileage entries first
+    // If editing: remove existing trip + related mileage entries first
     if (editingId) {
-      deleteMealEntry(editingId);
+      deleteTripEntry(editingId);
       mileageEntries
-        .filter(m => m.relatedMealId === editingId || m.date === formData.date || m.date === formData.endDate)
+        .filter(m => m.relatedTripId === editingId || m.date === formData.date || m.date === formData.endDate)
         .forEach(m => deleteMileageEntry(m.id));
     }
 
-    addMealEntry({
+    addTripEntry({
       ...formData,
-      id: mealId,
+      id: tripId,
       endDate: finalEndDate,
       duration,
       rate,
@@ -370,7 +371,7 @@ export const useTripForm = () => {
               allowance: allowance,
               vehicleType: mode,
               purpose: 'Fahrt zum Bahnhof (Dienstreise Beginn)',
-              relatedMealId: mealId
+              relatedTripId: tripId
             });
 
             // Trip from station (End Date)
@@ -383,7 +384,7 @@ export const useTripForm = () => {
               allowance: allowance,
               vehicleType: mode,
               purpose: 'Fahrt vom Bahnhof (Dienstreise Ende)',
-              relatedMealId: mealId
+              relatedTripId: tripId
             });
           }
         }
@@ -396,7 +397,7 @@ export const useTripForm = () => {
       if (ticketCost > 0) {
         let receiptFileName = null;
         if (tempPublicTransportReceiptPath) {
-          receiptFileName = await savePublicTransportReceiptFinal(mealId, formData.date);
+          receiptFileName = await savePublicTransportReceiptFinal(tripId, formData.date);
         }
 
         addMileageEntry({
@@ -408,7 +409,7 @@ export const useTripForm = () => {
           allowance: ticketCost,
           vehicleType: 'public_transport',
           purpose: 'Fahrtkosten (Tickets/Öffis)',
-          relatedMealId: mealId,
+          relatedTripId: tripId,
           receiptFileName
         });
       }
@@ -417,6 +418,7 @@ export const useTripForm = () => {
     // Reset form
     setFormData({ 
       ...formData, 
+      destination: '',
       startTime: '', 
       endTime: '', 
       endDate: '', 
@@ -431,11 +433,12 @@ export const useTripForm = () => {
     setTempPublicTransportReceiptPath(null);
     setEditingId(null);
 
-    if (onSuccess) onSuccess(mealId);
+    if (onSuccess) onSuccess(tripId);
   };
 
   const startEdit = async (entry) => {
     const editData = {
+      destination: entry.destination || '',
       date: entry.date || '',
       endDate: entry.endDate || entry.date || '',
       startTime: entry.startTime || '',
@@ -449,7 +452,7 @@ export const useTripForm = () => {
       }
     };
     // Restore receipt if exists
-    const relatedMileage = mileageEntries.filter(m => m.relatedMealId === entry.id);
+    const relatedMileage = mileageEntries.filter(m => m.relatedTripId === entry.id);
     const transportEntry = relatedMileage.find(m => m.vehicleType === 'public_transport' && m.receiptFileName);
     
     let loadedReceipt = null;

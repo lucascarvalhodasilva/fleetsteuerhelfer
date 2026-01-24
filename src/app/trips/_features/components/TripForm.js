@@ -140,6 +140,48 @@ export default function TripForm({
 
       <form id="trip-form" onSubmit={handleSubmit} className="p-4 space-y-5 overflow-y-auto flex-1">
         
+        {/* Section: Reiseziel */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center">
+              <svg className="w-3 h-3 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            <h3 className="text-xs font-semibold text-foreground">Reiseziel</h3>
+          </div>
+          <input
+            type="text"
+            value={formData.destination || ''}
+            onChange={e => {
+              let value = e.target.value;
+              // Replace double space with arrow (also handle iOS period insertion from double space)
+              if (value.includes('  ')) {
+                value = value.replace(/  /g, ' → ');
+              }
+              // Handle iOS double-space period: " ." becomes " → "
+              if (value.includes('. ') && !formData.destination?.includes('. ')) {
+                value = value.replace(/\. $/g, ' → ');
+              }
+              setFormData({...formData, destination: value});
+            }}
+            onKeyDown={e => {
+              // Prevent default period insertion on double space
+              if (e.key === '.' && formData.destination?.endsWith(' ')) {
+                e.preventDefault();
+                setFormData({...formData, destination: (formData.destination || '') + '→ '});
+              }
+            }}
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck="false"
+            placeholder="z.B. München → Berlin"
+            className="w-full px-3 py-2.5 bg-card rounded-lg border border-border/50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent text-sm text-foreground placeholder:text-muted-foreground"
+          />
+        </div>
+
         {/* Section: Reisezeitraum */}
         <div className="">
           <div className="flex items-center gap-2 mb-3">

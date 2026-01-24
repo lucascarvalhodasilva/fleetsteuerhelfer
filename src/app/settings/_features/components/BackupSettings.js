@@ -7,7 +7,7 @@ import JSZip from 'jszip';
 
 export default function BackupSettings() {
   const {
-    mealEntries,
+    tripEntries,
     mileageEntries,
     equipmentEntries,
     expenseEntries,
@@ -39,7 +39,7 @@ export default function BackupSettings() {
       version: 1,
       timestamp: new Date().toISOString(),
       data: {
-        mealEntries,
+        mealEntries: tripEntries,
         mileageEntries,
         equipmentEntries,
         expenseEntries,

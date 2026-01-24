@@ -72,13 +72,13 @@ export default function ExpensesPage() {
   const totalAmount = filteredEntries.reduce((sum, entry) => sum + entry.amount, 0);
 
   return (
-    <div className="bg-linear-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="bg-linear-to-br from-slate-50 via-blue-50 to-indigo-50 h-full overflow-hidden">
       <div 
-        className="flex flex-col gap-8 py-8 max-w-6xl mx-auto w-full"
+        className="flex flex-col h-full max-w-6xl mx-auto w-full pt-4 pb-4"
         style={{ paddingLeft: '1rem', paddingRight: '1rem' }}
       >
         {/* Full Width Content */}
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col flex-1 min-h-0">
           <ExpenseList 
             filteredEntries={filteredEntries}
             deleteExpenseEntry={deleteExpenseEntry}

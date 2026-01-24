@@ -2,11 +2,8 @@
 import { useState, useEffect } from 'react';
 import { useTripForm } from './_features/hooks/useTripForm';
 import { useTripList } from './_features/hooks/useTripList';
-import { useMonthlyExpenses } from './_features/hooks/useMonthlyExpenses';
 import TripForm from './_features/components/TripForm';
 import TripList from './_features/components/TripList';
-import BalanceSheetScroller from './_features/components/BalanceSheetScroller';
-import MonthlyExpenseModal from './_features/components/MonthlyExpenseModal';
 import FullScreenTableView from './_features/components/FullScreenTableView';
 
 export default function TripsPage() {
@@ -64,7 +61,7 @@ export default function TripsPage() {
   }, [showTripModal]);
 
   const { 
-    filteredMealEntries, 
+    tripEntries, 
     mileageEntries, 
     handleDeleteEntry, 
     selectedYear,
@@ -73,58 +70,16 @@ export default function TripsPage() {
     handleViewReceipt
   } = useTripList();
 
-  const {
-    showExpenseModal,
-    setShowExpenseModal,
-    expenseMonth,
-    expenseAmount,
-    setExpenseAmount,
-    filteredMonthlyExpenses,
-    handleClickWrapper,
-    handleMonthClick,
-    saveMonthlyExpense
-  } = useMonthlyExpenses();
-
-  const monthlyDeductible = expenseMonth ? (() => {
-    const monthIdx = expenseMonth.month;
-    const year = parseInt(selectedYear);
-    
-    const mealSum = filteredMealEntries
-      .filter(m => {
-        const d = new Date(m.date);
-        return d.getMonth() === monthIdx && d.getFullYear() === year;
-      })
-      .reduce((sum, m) => sum + (m.deductible || 0), 0);
-      
-    const mileageSum = mileageEntries
-      .filter(m => {
-        const d = new Date(m.date);
-        return d.getMonth() === monthIdx && d.getFullYear() === year;
-      })
-      .reduce((sum, m) => sum + (m.allowance || 0), 0);
-      
-    return mealSum + mileageSum;
-  })() : 0;
-
   return (
-    <div className="bg-linear-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="bg-linear-to-br from-slate-50 via-blue-50 to-indigo-50 h-full overflow-hidden">
       <div 
-        className="flex flex-col gap-8 py-8 max-w-6xl mx-auto w-full"
+        className="flex flex-col h-full max-w-6xl mx-auto w-full pt-4 pb-4"
         style={{ paddingLeft: '1rem', paddingRight: '1rem' }}
       >
         {/* Full Width Content */}
-        <div className="flex flex-col gap-6">
-          <BalanceSheetScroller 
-            filteredMonthlyExpenses={filteredMonthlyExpenses}
-            filteredMealEntries={filteredMealEntries}
-            mileageEntries={mileageEntries}
-            selectedYear={selectedYear}
-            handleClickWrapper={handleClickWrapper}
-            handleMonthClick={handleMonthClick}
-          />
-
+        <div className="flex flex-col flex-1 min-h-0">
           <TripList 
-            filteredMealEntries={filteredMealEntries}
+            tripEntries={tripEntries}
             mileageEntries={mileageEntries}
             handleDeleteEntry={handleDeleteEntry}
             selectedYear={selectedYear}
@@ -187,20 +142,10 @@ export default function TripsPage() {
           </div>
         )}
 
-        <MonthlyExpenseModal 
-          isOpen={showExpenseModal}
-          onClose={() => setShowExpenseModal(false)}
-          selectedMonth={expenseMonth?.month}
-          expenseAmount={expenseAmount}
-          setExpenseAmount={setExpenseAmount}
-          handleSaveExpense={saveMonthlyExpense}
-          monthlyDeductible={monthlyDeductible}
-        />
-
         <FullScreenTableView 
           isOpen={isFullScreen}
           onClose={() => setIsFullScreen(false)}
-          filteredMealEntries={filteredMealEntries}
+          tripEntries={tripEntries}
           mileageEntries={mileageEntries}
           selectedYear={selectedYear}
         />
