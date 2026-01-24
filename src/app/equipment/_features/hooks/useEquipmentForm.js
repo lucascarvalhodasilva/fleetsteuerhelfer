@@ -12,7 +12,7 @@ export const useEquipmentForm = () => {
   });
   const [tempReceipt, setTempReceipt] = useState(null); // Base64 string for preview
   const [tempReceiptPath, setTempReceiptPath] = useState(null); // Path to temp file in Cache
-  const [showCameraOptions, setShowCameraOptions] = useState(false);
+  const [tempReceiptType, setTempReceiptType] = useState('image'); // 'image' or 'pdf'
   const [submitError, setSubmitError] = useState(null);
 
   // Edit State
@@ -50,10 +50,61 @@ export const useEquipmentForm = () => {
       // 2. Use for preview and store path
       setTempReceipt(image.base64String);
       setTempReceiptPath(tempPath);
-      setShowCameraOptions(false);
+      setTempReceiptType('image');
     } catch (error) {
       console.error('Camera error:', error);
     }
+  };
+
+  // Pick file from file system (including cloud storage on Android)
+  const pickFile = () => {
+    return new Promise((resolve) => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*,.pdf';
+      input.style.display = 'none';
+      
+      input.onchange = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) {
+          resolve(null);
+          return;
+        }
+
+        try {
+          const reader = new FileReader();
+          reader.onload = async (event) => {
+            const base64 = event.target.result.split(',')[1]; // Remove data URL prefix
+            
+            // Save to Cache temporarily
+            const timestamp = Date.now();
+            const extension = file.name.split('.').pop() || 'jpg';
+            const tempFileName = `tmp_receipt_${timestamp}.${extension}`;
+            const tempPath = `temp/equipment/${tempFileName}`;
+
+            await Filesystem.writeFile({
+              path: tempPath,
+              data: base64,
+              directory: Directory.Cache,
+              recursive: true
+            });
+
+            setTempReceipt(base64);
+            setTempReceiptPath(tempPath);
+            setTempReceiptType(extension.toLowerCase() === 'pdf' ? 'pdf' : 'image');
+            resolve(base64);
+          };
+          reader.readAsDataURL(file);
+        } catch (error) {
+          console.error('File picker error:', error);
+          resolve(null);
+        }
+      };
+
+      document.body.appendChild(input);
+      input.click();
+      document.body.removeChild(input);
+    });
   };
 
   const saveReceiptFinal = async (entryId, dateStr) => {
@@ -75,8 +126,9 @@ export const useEquipmentForm = () => {
       const MM = String(now.getMinutes()).padStart(2, '0');
       const timeStr = `${yyyy}${mm}${dd}${HH}${MM}`;
 
-      // Define filenames
-      const fileNameInternal = `equipment_${entryId}_${timeStr}.jpg`;
+      // Define filenames with correct extension
+      const extension = tempReceiptType === 'pdf' ? 'pdf' : 'jpg';
+      const fileNameInternal = `equipment_${entryId}_${timeStr}.${extension}`;
 
       // Write to Directory.Documents
       await Filesystem.writeFile({
@@ -112,6 +164,7 @@ export const useEquipmentForm = () => {
     }
     setTempReceipt(null);
     setTempReceiptPath(null);
+    setTempReceiptType('image');
   };
 
   const startEdit = async (entry) => {
@@ -290,12 +343,11 @@ export const useEquipmentForm = () => {
     formData,
     setFormData,
     tempReceipt,
-    setTempReceipt,
+    tempReceiptType,
     removeReceipt,
-    showCameraOptions,
-    setShowCameraOptions,
     nameSuggestions,
     takePicture,
+    pickFile,
     handleSubmit,
     submitError,
     editingId,
