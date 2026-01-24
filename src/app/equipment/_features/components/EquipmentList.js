@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
+import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { formatDate } from '@/utils/dateFormatter';
 import ConfirmationModal from '@/components/shared/ConfirmationModal';
 
@@ -92,7 +92,7 @@ export default function EquipmentList({
     }
   };
 
-  const handlePointerUp = () => {
+  const handlePointerUp = useCallback(() => {
     if (!swipeState.current.dragging) return;
     const shouldOpen = swipeState.current.translateX < -(actionsWidth / 3);
     const id = swipeState.current.id;
@@ -102,7 +102,7 @@ export default function EquipmentList({
       el.style.transform = `translateX(${shouldOpen ? -actionsWidth : 0}px)`;
     }
     swipeState.current = { id: null, startX: 0, translateX: 0, dragging: false };
-  };
+  }, [setOpenSwipeId]);
 
   useEffect(() => {
     const onPointerUp = () => handlePointerUp();
@@ -112,7 +112,7 @@ export default function EquipmentList({
       window.removeEventListener('mouseup', onPointerUp);
       window.removeEventListener('touchend', onPointerUp);
     };
-  }, []);
+  }, [handlePointerUp]);
 
   const actionsWidth = 120;
   const totalDeductible = filteredEquipmentEntries.reduce((sum, entry) => sum + (entry.deductibleAmount || 0), 0);

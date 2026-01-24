@@ -10,22 +10,45 @@ export default function PDFViewer({ source, onError, onClose }) {
   const [numPages, setNumPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [scale, setScale] = useState(1.0);
+  const [initialScale, setInitialScale] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [width, setWidth] = useState(null);
+  const [containerSize, setContainerSize] = useState({ width: null, height: null });
 
   useEffect(() => {
-    const update = () => setWidth(Math.min(window.innerWidth - 32, 800));
+    const update = () => setContainerSize({
+      width: window.innerWidth - 32,
+      height: window.innerHeight - 150 // Account for toolbar and padding
+    });
     update();
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
   }, []);
 
-  const handleLoad = useCallback((pdf) => {
+  const handleLoad = useCallback(async (pdf) => {
     setNumPages(pdf.numPages);
-    setIsLoading(false);
     setError(null);
-  }, []);
+    
+    // Get first page to calculate initial scale to fit screen
+    try {
+      const page = await pdf.getPage(1);
+      const viewport = page.getViewport({ scale: 1.0 });
+      const pageWidth = viewport.width;
+      const pageHeight = viewport.height;
+      
+      // Calculate scale to fit within container
+      const scaleX = (containerSize.width || window.innerWidth - 32) / pageWidth;
+      const scaleY = (containerSize.height || window.innerHeight - 150) / pageHeight;
+      const fitScale = Math.min(scaleX, scaleY, 1.5); // Cap at 1.5x to avoid too large
+      
+      setScale(Math.max(0.5, Math.min(fitScale, 1.5)));
+      setInitialScale(fitScale);
+    } catch (e) {
+      console.warn('Could not calculate initial scale:', e);
+    }
+    
+    setIsLoading(false);
+  }, [containerSize]);
 
   const handleError = useCallback((err) => {
     setIsLoading(false);
@@ -107,22 +130,25 @@ export default function PDFViewer({ source, onError, onClose }) {
         )}
       </div>
 
-      {/* PDF Content - Centered */}
-      <div className="flex-1 overflow-auto flex items-center justify-center p-4">
-        {isLoading && <Spinner />}
-        <Document file={source} onLoadSuccess={handleLoad} onLoadError={handleError} options={options} loading={null} error={null}>
-          {!isLoading && numPages > 0 && (
-            <Page
-              pageNumber={currentPage}
-              scale={scale}
-              width={width ? width * scale : undefined}
-              renderTextLayer={false}
-              renderAnnotationLayer={false}
-              loading={<Spinner />}
-              className="shadow-2xl rounded-lg"
-            />
-          )}
-        </Document>
+      {/* PDF Content - Scrollable with centered content when smaller */}
+      <div className="flex-1 overflow-auto p-4">
+        <div className="min-h-full min-w-full flex">
+          <div className="m-auto">
+            {isLoading && <Spinner />}
+            <Document file={source} onLoadSuccess={handleLoad} onLoadError={handleError} options={options} loading={null} error={null}>
+              {!isLoading && numPages > 0 && (
+                <Page
+                  pageNumber={currentPage}
+                  scale={scale}
+                  renderTextLayer={false}
+                  renderAnnotationLayer={false}
+                  loading={<Spinner />}
+                  className="shadow-2xl rounded-lg"
+                />
+              )}
+            </Document>
+          </div>
+        </div>
       </div>
     </div>
   );

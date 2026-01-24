@@ -71,6 +71,22 @@ export const useEquipmentForm = () => {
           return;
         }
 
+        // Validate MIME type against whitelist
+        const allowedTypes = [
+          'image/jpeg',
+          'image/png', 
+          'image/gif',
+          'image/webp',
+          'application/pdf'
+        ];
+
+        if (!allowedTypes.includes(file.type)) {
+          console.error('Invalid file type:', file.type);
+          alert('Please upload only images (JPG, PNG, GIF, WebP) or PDF files.');
+          resolve(null);
+          return;
+        }
+
         try {
           const reader = new FileReader();
           reader.onload = async (event) => {
@@ -78,7 +94,17 @@ export const useEquipmentForm = () => {
             
             // Save to Cache temporarily
             const timestamp = Date.now();
-            const extension = file.name.split('.').pop() || 'jpg';
+            
+            // Derive extension from validated MIME type
+            const extensionMap = {
+              'image/jpeg': 'jpg',
+              'image/png': 'png',
+              'image/gif': 'gif',
+              'image/webp': 'webp',
+              'application/pdf': 'pdf'
+            };
+            
+            const extension = extensionMap[file.type] || 'jpg';
             const tempFileName = `tmp_receipt_${timestamp}.${extension}`;
             const tempPath = `temp/equipment/${tempFileName}`;
 
@@ -91,7 +117,7 @@ export const useEquipmentForm = () => {
 
             setTempReceipt(base64);
             setTempReceiptPath(tempPath);
-            setTempReceiptType(extension.toLowerCase() === 'pdf' ? 'pdf' : 'image');
+            setTempReceiptType(extension === 'pdf' ? 'pdf' : 'image');
             resolve(base64);
           };
           reader.readAsDataURL(file);

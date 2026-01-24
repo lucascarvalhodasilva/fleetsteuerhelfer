@@ -123,7 +123,7 @@ const UploadButton = ({ icon, title, subtitle, colors, onClick }) => (
 );
 
 const Thumbnail = ({ receipt, receiptType, colors, onClick }) => (
-  <button type="button" onClick={onClick} className="relative w-14 h-14 rounded-lg overflow-hidden border border-border/50 shrink-0 group">
+  <button type="button" onClick={onClick} className="relative w-14 h-14 rounded-lg overflow-hidden border border-border/50 shrink-0 group active:scale-95 transition-transform">
     {receiptType === 'pdf' ? (
       <div className={`w-full h-full bg-gradient-to-br ${colors.pdf} flex items-center justify-center`}>
         <DocumentIcon className={colors.icon} />
@@ -131,8 +131,9 @@ const Thumbnail = ({ receipt, receiptType, colors, onClick }) => (
     ) : (
       <img src={`data:image/jpeg;base64,${receipt}`} alt="Beleg" className="w-full h-full object-cover" />
     )}
-    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-      <EyeIcon className="text-white" />
+    {/* Always visible tap indicator */}
+    <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+      <EyeIcon className="text-white drop-shadow-md" />
     </div>
   </button>
 );
