@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import SpesenSideNav from './SpesenSideNav';
+import TaxDeductibleChart from './TaxDeductibleChart';
 
 /**
  * @typedef {'default' | 'negative' | 'clickable'} KPIVariant
@@ -99,12 +100,18 @@ export default function DashboardKPIs({
   netTotal 
 }) {
   const [isSpesenSideNavOpen, setIsSpesenSideNavOpen] = useState(false);
+  const [isChartExpanded, setIsChartExpanded] = useState(false);
 
   return (
     <div className="space-y-7">
       {/* Main Tax Deductible Card */}
         <div className="rounded-2xl bg-linear-to-br from-primary/90 to-primary text-white shadow-lg p-3">
-          <div className="flex items-center justify-between mb-4">
+          <div 
+            className="flex items-center justify-between mb-4 cursor-pointer"
+            onClick={() => setIsChartExpanded(!isChartExpanded)}
+            role="button"
+            tabIndex={0}
+          >
             <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -113,7 +120,18 @@ export default function DashboardKPIs({
           </div>
           <span className="text-xs font-medium text-white/80 uppercase tracking-wider">Gesamt Absetzbar</span>
             </div>
-            <span className="text-[10px] bg-white/20 px-3 py-1 rounded-full font-medium">{selectedYear}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] bg-white/20 px-3 py-1 rounded-full font-medium">{selectedYear}</span>
+              <svg 
+                className={`w-4 h-4 transition-transform duration-300 ${isChartExpanded ? 'rotate-180' : ''}`} 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor" 
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
           </div>
           
           <div className="mt-4 mb-2">
@@ -121,6 +139,15 @@ export default function DashboardKPIs({
             <span className="text-2xl font-medium ml-1 opacity-80">€</span>
           </div>
           <p className="text-xs text-white/60">Steuerlich absetzbare Summe</p>
+          
+          {/* Monthly Tax Deductible Chart - Collapsible */}
+          <div 
+            className={`overflow-hidden transition-all duration-500 ease-in-out ${
+              isChartExpanded ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+            }`}
+          >
+            <TaxDeductibleChart year={selectedYear} />
+          </div>
         </div>
 
         {/* KPI Grid */}
