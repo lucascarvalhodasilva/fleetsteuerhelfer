@@ -20,19 +20,19 @@ const KPIItem = ({ icon, label, value, variant = 'default', onClick }) => {
   const variants = {
     default: 'bg-gray-300/40 dark:bg-gray/5',
     negative: 'bg-red-50/80 dark:bg-red-400/10',
-    clickable: 'bg-yellow-500 cursor-pointer hover:bg-yellow-600 hover:scale-105',
+    clickable: 'bg-yellow-500/40 cursor-pointer hover:bg-yellow-500/60 hover:scale-105',
   };
 
   const textVariants = {
     default: 'text-foreground',
     negative: 'text-red-600 dark:text-red-400',
-    clickable: 'text-white',
+    clickable: 'text-foreground',
   };
 
   const iconVariants = {
     default: 'bg-primary/10 text-primary',
     negative: 'bg-primary/10 text-primary',
-    clickable: 'bg-white/20 text-white',
+    clickable: 'bg-yellow-500/20 text-yellow-700',
   };
 
   return (
@@ -46,11 +46,11 @@ const KPIItem = ({ icon, label, value, variant = 'default', onClick }) => {
         {icon}
       </div>
       <div className="min-w-0 flex-1">
-        <p className={`text-[10px] uppercase font-medium tracking-wide truncate mb-1 ${variant === 'clickable' ? 'text-white/80' : 'text-muted-foreground'}`}>{label}</p>
+        <p className={`text-[10px] uppercase font-medium tracking-wide truncate mb-1 text-muted-foreground`}>{label}</p>
         <p className={`text-sm font-bold ${textVariants[variant]} truncate`}>{value}</p>
       </div>
       {onClick && (
-        <svg className="w-4 h-4 text-white shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <svg className="w-4 h-4 text-foreground shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
         </svg>
       )}
