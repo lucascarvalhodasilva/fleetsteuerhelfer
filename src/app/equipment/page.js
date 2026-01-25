@@ -21,6 +21,7 @@ export default function EquipmentPage() {
     pickFile,
     handleSubmit,
     submitError,
+    isSubmitting,
     editingId,
     startEdit,
     cancelEdit,
@@ -111,6 +112,7 @@ export default function EquipmentPage() {
                 takePicture={takePicture}
                 pickFile={pickFile}
                 submitError={submitError}
+                isSubmitting={isSubmitting}
                 editingId={editingId}
                 cancelEdit={handleModalClose}
                 hasChanges={hasChanges}

@@ -14,6 +14,7 @@ export const useEquipmentForm = () => {
   const [tempReceiptPath, setTempReceiptPath] = useState(null); // Path to temp file in Cache
   const [tempReceiptType, setTempReceiptType] = useState('image'); // 'image' or 'pdf'
   const [submitError, setSubmitError] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Edit State
   const [editingId, setEditingId] = useState(null);
@@ -272,96 +273,107 @@ export const useEquipmentForm = () => {
   const handleSubmit = async (e, onSuccess) => {
     e.preventDefault();
     setSubmitError(null);
+    setIsSubmitting(true);
 
-    if (!formData.name.trim()) {
-      setSubmitError("Bitte eine Bezeichnung eingeben.");
-      return;
-    }
+    try {
+      if (!formData.name.trim()) {
+        setSubmitError("Bitte eine Bezeichnung eingeben.");
+        setIsSubmitting(false);
+        return;
+      }
 
-    if (!formData.date) {
-      setSubmitError("Bitte ein Kaufdatum auswählen.");
-      return;
-    }
+      if (!formData.date) {
+        setSubmitError("Bitte ein Kaufdatum auswählen.");
+        setIsSubmitting(false);
+        return;
+      }
 
-    const price = parseFloat(formData.price);
-    if (!formData.price || isNaN(price) || price <= 0) {
-      setSubmitError("Bitte einen gültigen Preis (> 0) eingeben.");
-      return;
-    }
+      const price = parseFloat(formData.price);
+      if (!formData.price || isNaN(price) || price <= 0) {
+        setSubmitError("Bitte einen gültigen Preis (> 0) eingeben.");
+        setIsSubmitting(false);
+        return;
+      }
 
-    const gwgLimit = taxRates?.gwgLimit || 952;
-    const isDeductibleImmediately = price <= gwgLimit; 
-    
-    let deductibleAmount = 0;
-    let status = '';
-
-    if (isDeductibleImmediately) {
-      deductibleAmount = price;
-      status = 'Sofort absetzbar (GWG)';
-    } else {
-      const usefulLifeYears = 3;
-      const purchaseDate = new Date(formData.date);
-      const purchaseMonth = purchaseDate.getMonth(); 
-      const monthsInYear = 12 - purchaseMonth;
+      const gwgLimit = taxRates?.gwgLimit || 952;
+      const isDeductibleImmediately = price <= gwgLimit; 
       
-      const monthlyDepreciation = price / (usefulLifeYears * 12);
-      deductibleAmount = monthlyDepreciation * monthsInYear;
-      
-      status = `Abschreibung (3 Jahre) - ${monthsInYear} Monate anteilig`;
-    }
+      let deductibleAmount = 0;
+      let status = '';
 
-    const newId = editingId || Date.now();
-    let receiptFileName = null;
-    
-    // If editing, check if we need to update receipt
-    if (editingId) {
-      // If path changed or removed
-      if (tempReceiptPath !== initialReceiptPath) {
-        if (tempReceiptPath) {
-           receiptFileName = await saveReceiptFinal(newId, formData.date);
+      if (isDeductibleImmediately) {
+        deductibleAmount = price;
+        status = 'Sofort absetzbar (GWG)';
+      } else {
+        const usefulLifeYears = 3;
+        const purchaseDate = new Date(formData.date);
+        const purchaseMonth = purchaseDate.getMonth(); 
+        const monthsInYear = 12 - purchaseMonth;
+        
+        const monthlyDepreciation = price / (usefulLifeYears * 12);
+        deductibleAmount = monthlyDepreciation * monthsInYear;
+        
+        status = `Abschreibung (3 Jahre) - ${monthsInYear} Monate anteilig`;
+      }
+
+      const newId = editingId || Date.now();
+      let receiptFileName = null;
+      
+      // If editing, check if we need to update receipt
+      if (editingId) {
+        // If path changed or removed
+        if (tempReceiptPath !== initialReceiptPath) {
+          if (tempReceiptPath) {
+             receiptFileName = await saveReceiptFinal(newId, formData.date);
+          } else {
+             receiptFileName = null; // Receipt removed
+          }
         } else {
-           receiptFileName = null; // Receipt removed
+          // Keep existing receipt if not changed
+          const existingEntry = equipmentEntries.find(e => e.id === editingId);
+          receiptFileName = existingEntry ? existingEntry.receiptFileName : null;
         }
       } else {
-        // Keep existing receipt if not changed
-        const existingEntry = equipmentEntries.find(e => e.id === editingId);
-        receiptFileName = existingEntry ? existingEntry.receiptFileName : null;
+        // New Entry
+        if (tempReceiptPath) {
+          receiptFileName = await saveReceiptFinal(newId, formData.date);
+        }
       }
-    } else {
-      // New Entry
-      if (tempReceiptPath) {
-        receiptFileName = await saveReceiptFinal(newId, formData.date);
+
+      const entryData = {
+        ...formData,
+        id: newId,
+        price,
+        deductibleAmount,
+        status,
+        receiptFileName
+      };
+
+      if (editingId) {
+        updateEquipmentEntry(entryData);
+      } else {
+        addEquipmentEntry(entryData);
       }
-    }
 
-    const entryData = {
-      ...formData,
-      id: newId,
-      price,
-      deductibleAmount,
-      status,
-      receiptFileName
-    };
+      setFormData({
+        name: '',
+        date: '',
+        price: ''
+      });
+      setTempReceipt(null);
+      setTempReceiptPath(null);
+      setEditingId(null);
+      setInitialEditData(null);
+      setInitialReceiptPath(null);
+      setIsSubmitting(false);
 
-    if (editingId) {
-      updateEquipmentEntry(entryData);
-    } else {
-      addEquipmentEntry(entryData);
-    }
-
-    setFormData({
-      name: '',
-      date: '',
-      price: ''
-    });
-    setTempReceipt(null);
-    setTempReceiptPath(null);
-    setEditingId(null);
-    setInitialEditData(null);
-    setInitialReceiptPath(null);
-
-    if (onSuccess) {
-      onSuccess(newId);
+      if (onSuccess) {
+        onSuccess(newId);
+      }
+    } catch (error) {
+      console.error('Error submitting equipment:', error);
+      setSubmitError('Ein Fehler ist aufgetreten beim Speichern.');
+      setIsSubmitting(false);
     }
   };
 
@@ -376,6 +388,7 @@ export const useEquipmentForm = () => {
     pickFile,
     handleSubmit,
     submitError,
+    isSubmitting,
     editingId,
     startEdit,
     cancelEdit,

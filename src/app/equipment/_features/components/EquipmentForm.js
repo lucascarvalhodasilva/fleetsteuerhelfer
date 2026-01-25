@@ -3,6 +3,7 @@ import NumberInput from '@/components/shared/NumberInput';
 import CustomDatePicker from '@/components/shared/CustomDatePicker';
 import SuggestionInput from '@/components/shared/SuggestionInput';
 import ReceiptUpload from '@/components/shared/ReceiptUpload';
+import { LoadingButton } from '@/components/shared/skeletons';
 
 export default function EquipmentForm({ 
   formData, 
@@ -15,6 +16,7 @@ export default function EquipmentForm({
   pickFile,
   nameSuggestions, 
   submitError,
+  isSubmitting,
   editingId,
   cancelEdit,
   hasChanges
@@ -163,12 +165,13 @@ export default function EquipmentForm({
 
       {/* Footer with Submit Button */}
       <div className={`border-t border-border/50 bg-muted/30 p-4 shrink-0 ${submitError ? 'border-t-0 pt-2' : ''}`}>
-        <button 
+        <LoadingButton 
           type="submit" 
           form="equipment-form"
-          disabled={editingId && !hasChanges}
+          disabled={(editingId && !hasChanges) || isSubmitting}
+          isLoading={isSubmitting}
           className={`w-full px-6 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 text-sm shadow-sm ${
-            editingId && !hasChanges 
+            (editingId && !hasChanges) || isSubmitting
               ? 'bg-muted text-muted-foreground cursor-not-allowed' 
               : editingId
                 ? 'bg-amber-500 hover:bg-amber-600 text-white'
@@ -190,7 +193,7 @@ export default function EquipmentForm({
               Hinzufügen
             </>
           )}
-        </button>
+        </LoadingButton>
       </div>
     </div>
   );
