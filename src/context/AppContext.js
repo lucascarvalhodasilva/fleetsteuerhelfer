@@ -318,22 +318,10 @@ const generateMockData = (currentYear) => {
   ];
 
   const mockEquipmentEntries = [
-    // Current year equipment
     { id: 4001, date: `${currentYear}-01-10`, name: 'Laptop Dell XPS 15', price: 1899.00, category: 'IT-Ausstattung', depreciationYears: 3 },
     { id: 4002, date: `${currentYear}-02-15`, name: 'Monitor 27" 4K', price: 449.00, category: 'IT-Ausstattung', depreciationYears: 0 },
     { id: 4003, date: `${currentYear}-03-20`, name: 'Bürostuhl ergonomisch', price: 650.00, category: 'Büromöbel', depreciationYears: 0 },
-    { id: 4004, date: `${currentYear}-04-05`, name: 'Externe Festplatte 2TB', price: 89.00, category: 'IT-Ausstattung', depreciationYears: 0 },
-    // GWG Boundary Cases (Phase 1.2)
-    { id: 4005, date: `${currentYear}-05-10`, name: 'Stehtisch elektrisch', price: 952.00, category: 'Büromöbel', depreciationYears: 0 },
-    { id: 4006, date: `${currentYear}-06-01`, name: 'Konferenztisch hochwertig', price: 953.00, category: 'Büromöbel', depreciationYears: 3 },
-    { id: 4007, date: `${currentYear}-03-15`, name: 'Server Dell PowerEdge', price: 4500.00, category: 'IT-Ausstattung', depreciationYears: 3 },
-    { id: 4008, date: `${currentYear}-07-20`, name: 'Projektor HD', price: 951.00, category: 'Präsentationstechnik', depreciationYears: 0 },
-    // Previous year equipment - Year 2 of depreciation (Phase 1.5)
-    { id: 4100, date: `${currentYear - 1}-03-15`, name: 'MacBook Pro 16" M2', price: 2899.00, category: 'IT-Ausstattung', depreciationYears: 3 },
-    { id: 4101, date: `${currentYear - 1}-08-20`, name: 'Drucker Multifunktion HP', price: 1200.00, category: 'Büroausstattung', depreciationYears: 3 },
-    // Two years ago - Year 3/final year of depreciation (Phase 1.5)
-    { id: 4200, date: `${currentYear - 2}-05-10`, name: 'Monitor Setup 3x 27" Dell', price: 1500.00, category: 'IT-Ausstattung', depreciationYears: 3 },
-    { id: 4201, date: `${currentYear - 2}-11-05`, name: 'Schreibtisch höhenverstellbar', price: 1100.00, category: 'Büromöbel', depreciationYears: 3 }
+    { id: 4004, date: `${currentYear}-04-05`, name: 'Externe Festplatte 2TB', price: 89.00, category: 'IT-Ausstattung', depreciationYears: 0 }
   ];
 
   const mockExpenseEntries = [
@@ -622,9 +610,39 @@ export function AppProvider({ children }) {
           if (entry.date) yearsSet.add(new Date(entry.date).getFullYear());
         });
         
-        // Extract years from equipment entries
+        // Extract years from equipment entries - include all depreciation years
         equipmentEntries.forEach(entry => {
-          if (entry.purchaseDate) yearsSet.add(new Date(entry.purchaseDate).getFullYear());
+          if (entry.date) {
+            const purchaseDate = new Date(entry.date);
+            const purchaseYear = purchaseDate.getFullYear();
+            const price = parseFloat(entry.price);
+            const gwgLimit = taxRates?.gwgLimit || 952;
+            
+            // GWG items: only purchase year
+            if (price <= gwgLimit) {
+              yearsSet.add(purchaseYear);
+            } else {
+              // Depreciating assets: add all years with depreciation
+              const usefulLifeYears = 3;
+              const endYear = purchaseYear + usefulLifeYears;
+              
+              for (let year = purchaseYear; year <= endYear; year++) {
+                // Calculate months for this year
+                let monthsInYear = 0;
+                if (year === purchaseYear) {
+                  monthsInYear = 12 - purchaseDate.getMonth();
+                } else if (year < endYear) {
+                  monthsInYear = 12;
+                } else if (year === endYear) {
+                  monthsInYear = purchaseDate.getMonth();
+                }
+                
+                if (monthsInYear > 0) {
+                  yearsSet.add(year);
+                }
+              }
+            }
+          }
         });
         
         // Extract years from monthly employer expenses
