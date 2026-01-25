@@ -303,18 +303,18 @@ const generateMockData = (currentYear) => {
   ];
 
   const mockMonthlyExpenses = [
-    { id: 3001, year: currentYear, month: 0, amount: 180.00 }, // January - employer reimbursement
-    { id: 3002, year: currentYear, month: 1, amount: 220.00 }, // February
-    { id: 3003, year: currentYear, month: 2, amount: 350.00 }, // March
-    { id: 3004, year: currentYear, month: 3, amount: 150.00 }, // April
-    { id: 3005, year: currentYear, month: 4, amount: 45.00 },  // May
-    { id: 3006, year: currentYear, month: 5, amount: 280.00 }, // June
-    { id: 3007, year: currentYear, month: 6, amount: 120.00 }, // July
-    { id: 3008, year: currentYear, month: 7, amount: 190.00 }, // August
-    { id: 3009, year: currentYear, month: 8, amount: 240.00 }, // September
-    { id: 3010, year: currentYear, month: 9, amount: 310.00 }, // October
-    { id: 3011, year: currentYear, month: 10, amount: 175.00 }, // November
-    { id: 3012, year: currentYear, month: 11, amount: 265.00 }  // December
+    { id: 3001, year: currentYear, month: 1, amount: 180.00, note: 'Monatspauschale' }, // January - employer reimbursement
+    { id: 3002, year: currentYear, month: 2, amount: 220.00, note: 'Monatspauschale' }, // February
+    { id: 3003, year: currentYear, month: 3, amount: 350.00, note: 'Monatspauschale' }, // March
+    { id: 3004, year: currentYear, month: 4, amount: 150.00, note: 'Monatspauschale' }, // April
+    { id: 3005, year: currentYear, month: 5, amount: 45.00, note: 'Monatspauschale' },  // May
+    { id: 3006, year: currentYear, month: 6, amount: 280.00, note: 'Monatspauschale' }, // June
+    { id: 3007, year: currentYear, month: 7, amount: 120.00, note: 'Monatspauschale' }, // July
+    { id: 3008, year: currentYear, month: 8, amount: 190.00, note: 'Monatspauschale' }, // August
+    { id: 3009, year: currentYear, month: 9, amount: 240.00, note: 'Monatspauschale' }, // September
+    { id: 3010, year: currentYear, month: 10, amount: 310.00, note: 'Monatspauschale' }, // October
+    { id: 3011, year: currentYear, month: 11, amount: 175.00, note: 'Monatspauschale' }, // November
+    { id: 3012, year: currentYear, month: 12, amount: 265.00, note: 'Monatspauschale' }  // December
   ];
 
   const mockEquipmentEntries = [
@@ -541,8 +541,16 @@ export function AppProvider({ children }) {
     });
   };
 
+  const updateMonthlyEmployerExpense = (id, updatedEntry) => {
+    setMonthlyEmployerExpenses(prev => prev.map(entry => entry.id === id ? { ...entry, ...updatedEntry } : entry));
+  };
+
   const deleteMonthlyEmployerExpense = (id) => {
     setMonthlyEmployerExpenses(prev => prev.filter(e => e.id !== id));
+  };
+
+  const getSpesenForYear = (year) => {
+    return monthlyEmployerExpenses.filter(e => e.year === year);
   };
 
   const addExpenseEntry = (entry) => {
@@ -584,7 +592,7 @@ export function AppProvider({ children }) {
       mileageEntries, addMileageEntry, deleteMileageEntry,
       equipmentEntries, addEquipmentEntry, deleteEquipmentEntry, updateEquipmentEntry,
       expenseEntries, addExpenseEntry, deleteExpenseEntry,
-      monthlyEmployerExpenses, addMonthlyEmployerExpense, deleteMonthlyEmployerExpense,
+      monthlyEmployerExpenses, addMonthlyEmployerExpense, updateMonthlyEmployerExpense, deleteMonthlyEmployerExpense, getSpesenForYear,
       defaultCommute, setDefaultCommute,
       taxRates, setTaxRates, getMileageRate,
       selectedYear, setSelectedYear,

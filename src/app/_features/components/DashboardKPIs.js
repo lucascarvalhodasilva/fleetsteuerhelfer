@@ -1,7 +1,9 @@
-import React from 'react';
+"use client";
+import React, { useState } from 'react';
+import SpesenSideNav from './SpesenSideNav';
 
 /**
- * @typedef {'default' | 'negative'} KPIVariant
+ * @typedef {'default' | 'negative' | 'clickable'} KPIVariant
  */
 
 /**
@@ -10,29 +12,48 @@ import React from 'react';
  * @param {React.ReactNode} props.icon - The icon to display
  * @param {string} props.label - The label text for the KPI
  * @param {string} props.value - The formatted value to display
- * @param {KPIVariant} [props.variant='default'] - Visual variant ('default' or 'negative')
+ * @param {KPIVariant} [props.variant='default'] - Visual variant ('default', 'negative', or 'clickable')
+ * @param {Function} [props.onClick] - Optional click handler
  * @returns {JSX.Element} The rendered KPI item
  */
-const KPIItem = ({ icon, label, value, variant = 'default' }) => {
+const KPIItem = ({ icon, label, value, variant = 'default', onClick }) => {
   const variants = {
     default: 'bg-gray-300/40 dark:bg-gray/5',
     negative: 'bg-red-50/80 dark:bg-red-400/10',
+    clickable: 'bg-yellow-500 cursor-pointer hover:bg-yellow-600 hover:scale-105',
   };
 
   const textVariants = {
     default: 'text-foreground',
     negative: 'text-red-600 dark:text-red-400',
+    clickable: 'text-white',
+  };
+
+  const iconVariants = {
+    default: 'bg-primary/10 text-primary',
+    negative: 'bg-primary/10 text-primary',
+    clickable: 'bg-white/20 text-white',
   };
 
   return (
-    <div className={`${variants[variant]} rounded-xl p-4 flex items-center gap-4 transition-all hover:scale-[1.02]`}>
-      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+    <div 
+      className={`${variants[variant]} rounded-xl p-4 flex items-center gap-4 transition-all ${onClick ? 'hover:scale-[1.02]' : ''}`}
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+    >
+      <div className={`w-10 h-10 rounded-lg ${iconVariants[variant]} flex items-center justify-center shrink-0`}>
         {icon}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-[10px] text-muted-foreground uppercase font-medium tracking-wide truncate mb-1">{label}</p>
+        <p className={`text-[10px] uppercase font-medium tracking-wide truncate mb-1 ${variant === 'clickable' ? 'text-white/80' : 'text-muted-foreground'}`}>{label}</p>
         <p className={`text-sm font-bold ${textVariants[variant]} truncate`}>{value}</p>
       </div>
+      {onClick && (
+        <svg className="w-4 h-4 text-white shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      )}
     </div>
   );
 };
@@ -77,6 +98,8 @@ export default function DashboardKPIs({
   totalExpenses, 
   netTotal 
 }) {
+  const [isSpesenSideNavOpen, setIsSpesenSideNavOpen] = useState(false);
+
   return (
     <div className="space-y-7">
       {/* Main Tax Deductible Card */}
@@ -131,13 +154,12 @@ export default function DashboardKPIs({
         />
         <KPIItem
           icon={
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <span className="text-base">💶</span>
           }
-          label="Spesen"
-          value={`-${totalEmployerReimbursement.toFixed(2)} €`}
-          variant="negative"
+          label="AG Spesen"
+          value={`${totalEmployerReimbursement.toFixed(2)} €`}
+          variant="clickable"
+          onClick={() => setIsSpesenSideNavOpen(true)}
         />
       </div>
 
@@ -177,6 +199,13 @@ export default function DashboardKPIs({
           </div>
         </div>
       </div>
+
+      {/* Spesen Side Navigation */}
+      <SpesenSideNav
+        isOpen={isSpesenSideNavOpen}
+        onClose={() => setIsSpesenSideNavOpen(false)}
+        year={selectedYear}
+      />
     </div>
   );
 }

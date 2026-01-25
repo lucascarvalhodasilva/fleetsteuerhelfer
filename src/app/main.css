@@ -1030,12 +1030,24 @@ h6, .h6 {
   50% { opacity: 0.5; }
 }
 
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 /* Animation utilities */
 .animate-fade-in { animation: fadeIn var(--duration-moderate) var(--ease-out); }
 .animate-slide-up { animation: slideUp var(--duration-moderate) var(--ease-out); }
 .animate-slide-down { animation: slideDown var(--duration-moderate) var(--ease-out); }
 .animate-zoom-in { animation: zoomIn var(--duration-moderate) var(--ease-out); }
 .animate-pulse { animation: pulse 2s var(--ease-in-out) infinite; }
+.animate-slideInLeft { animation: slideInLeft 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 
 /* ============================================
    SCROLLBAR STYLING
