@@ -135,34 +135,52 @@ export const useEquipmentList = () => {
   };
 
   const filteredEquipmentEntries = useMemo(() => {
-    return equipmentEntries.map(entry => {
-      const purchaseDate = new Date(entry.date);
-      const purchaseYear = purchaseDate.getFullYear();
-      const price = parseFloat(entry.price);
-      
-      // Calculate deductible for the entry's purchase year for display
-      const deductible = calculateDeductible(entry, purchaseYear);
-      
-      // For GWG items, show full amount
-      if (price <= (taxRates?.gwgLimit || 952)) {
+    return equipmentEntries
+      .map(entry => {
+        const purchaseDate = new Date(entry.date);
+        const purchaseYear = purchaseDate.getFullYear();
+        const price = parseFloat(entry.price);
+        
+        // Calculate deductible for the selected year
+        const deductible = calculateDeductible(entry, selectedYear);
+        
+        // Skip entries with no deduction in the selected year
+        if (deductible === 0) {
+          return null;
+        }
+        
+        // For GWG items, show full amount
+        if (price <= (taxRates?.gwgLimit || 952)) {
+          return {
+            ...entry,
+            deductibleAmount: price,
+            status: 'GWG (Sofortabzug)'
+          };
+        }
+
+        // For depreciating assets, calculate based on selected year
+        const usefulLifeYears = 3;
+        const endYear = purchaseYear + usefulLifeYears;
+        
+        // Calculate months for the selected year
+        let monthsInYear = 0;
+        if (selectedYear === purchaseYear) {
+          monthsInYear = 12 - purchaseDate.getMonth();
+        } else if (selectedYear < endYear) {
+          monthsInYear = 12;
+        } else if (selectedYear === endYear) {
+          monthsInYear = purchaseDate.getMonth();
+        }
+
         return {
           ...entry,
-          deductibleAmount: price,
-          status: 'GWG (Sofortabzug)'
+          deductibleAmount: deductible,
+          status: `Abschreibung ${selectedYear} (${monthsInYear} Mon.)`
         };
-      }
-
-      // For depreciating assets, calculate based on purchase year
-      const usefulLifeYears = 3;
-      const monthsInPurchaseYear = 12 - purchaseDate.getMonth();
-
-      return {
-        ...entry,
-        deductibleAmount: deductible,
-        status: `Abschreibung ${purchaseYear} (${monthsInPurchaseYear} Mon.)`
-      };
-    }).sort((a, b) => new Date(b.date) - new Date(a.date));
-  }, [equipmentEntries, taxRates]);
+      })
+      .filter(entry => entry !== null)
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+  }, [equipmentEntries, taxRates, selectedYear]);
 
   return {
     filteredEquipmentEntries,

@@ -464,9 +464,39 @@ export function AppProvider({ children }) {
           if (entry.date) yearsSet.add(new Date(entry.date).getFullYear());
         });
         
-        // Extract years from equipment entries
+        // Extract years from equipment entries - include all depreciation years
         equipmentEntries.forEach(entry => {
-          if (entry.purchaseDate) yearsSet.add(new Date(entry.purchaseDate).getFullYear());
+          if (entry.date) {
+            const purchaseDate = new Date(entry.date);
+            const purchaseYear = purchaseDate.getFullYear();
+            const price = parseFloat(entry.price);
+            const gwgLimit = taxRates?.gwgLimit || 952;
+            
+            // GWG items: only purchase year
+            if (price <= gwgLimit) {
+              yearsSet.add(purchaseYear);
+            } else {
+              // Depreciating assets: add all years with depreciation
+              const usefulLifeYears = 3;
+              const endYear = purchaseYear + usefulLifeYears;
+              
+              for (let year = purchaseYear; year <= endYear; year++) {
+                // Calculate months for this year
+                let monthsInYear = 0;
+                if (year === purchaseYear) {
+                  monthsInYear = 12 - purchaseDate.getMonth();
+                } else if (year < endYear) {
+                  monthsInYear = 12;
+                } else if (year === endYear) {
+                  monthsInYear = purchaseDate.getMonth();
+                }
+                
+                if (monthsInYear > 0) {
+                  yearsSet.add(year);
+                }
+              }
+            }
+          }
         });
         
         // Extract years from monthly employer expenses

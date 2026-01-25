@@ -12,7 +12,8 @@ export default function Header() {
     tripEntries = [],
     mileageEntries = [],
     expenseEntries = [],
-    equipmentEntries = []
+    equipmentEntries = [],
+    taxRates
   } = useAppContext();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -44,9 +45,42 @@ export default function Header() {
     return entryYear === selectedYear;
   });
 
+  // Helper function to calculate equipment deductible for a specific year
+  const calculateEquipmentDeductible = (entry, year, taxRates) => {
+    const purchaseDate = new Date(entry.date);
+    const purchaseYear = purchaseDate.getFullYear();
+    const price = parseFloat(entry.price);
+    const gwgLimit = taxRates?.gwgLimit || 952;
+    
+    // GWG: Full amount in purchase year only
+    if (price <= gwgLimit) {
+      return year === purchaseYear ? price : 0;
+    }
+    
+    // Depreciating Assets
+    const usefulLifeYears = 3;
+    const endYear = purchaseYear + usefulLifeYears;
+    
+    if (year < purchaseYear || year > endYear) return 0;
+    
+    let monthsInYear = 0;
+    if (year === purchaseYear) {
+      monthsInYear = 12 - purchaseDate.getMonth();
+    } else if (year < endYear) {
+      monthsInYear = 12;
+    } else if (year === endYear) {
+      monthsInYear = purchaseDate.getMonth();
+    }
+    
+    if (monthsInYear <= 0) return 0;
+    
+    const monthlyDepreciation = price / (usefulLifeYears * 12);
+    return parseFloat((monthlyDepreciation * monthsInYear).toFixed(2));
+  };
+
   const filteredEquipmentEntries = equipmentEntries.filter(entry => {
-    const entryYear = new Date(entry.date).getFullYear();
-    return entryYear === selectedYear;
+    const deductible = calculateEquipmentDeductible(entry, selectedYear, taxRates);
+    return deductible > 0;
   });
 
   // Calculate totals
@@ -69,7 +103,10 @@ export default function Header() {
   }, 0);
 
   const expenseTotal = filteredExpenseEntries.reduce((sum, entry) => sum + (entry.amount || 0), 0);
-  const equipmentTotal = filteredEquipmentEntries.reduce((sum, entry) => sum + (entry.deductibleAmount || 0), 0);
+  const equipmentTotal = filteredEquipmentEntries.reduce((sum, entry) => {
+    const deductible = calculateEquipmentDeductible(entry, selectedYear, taxRates);
+    return sum + deductible;
+  }, 0);
 
   const getPageConfig = () => {
     if (pathname === '/') return { 
