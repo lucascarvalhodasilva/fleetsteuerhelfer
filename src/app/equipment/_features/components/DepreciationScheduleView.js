@@ -8,6 +8,7 @@ export default function DepreciationScheduleView({ item, schedule, selectedYear 
   const isGWG = schedule.type === 'GWG';
   const purchaseDate = new Date(item.date);
   const monthName = purchaseDate.toLocaleDateString('de-DE', { month: 'long' });
+  const monthShort = purchaseDate.toLocaleDateString('de-DE', { month: 'short' });
   
   // Calculate progress percentage
   const completedMonths = schedule.years
@@ -59,7 +60,7 @@ export default function DepreciationScheduleView({ item, schedule, selectedYear 
                   )}
                 </td>
                 <td className="text-center py-2 px-2 text-muted-foreground">
-                  {yearData.months}/{isGWG ? 12 : 12}
+                  {yearData.months}/12
                 </td>
                 {!isGWG && (
                   <td className="text-right py-2 px-2 text-muted-foreground font-mono">
@@ -159,11 +160,11 @@ export default function DepreciationScheduleView({ item, schedule, selectedYear 
                   • Monatliche Abschreibung: €{parseFloat(item.price).toFixed(2)} ÷ 36 Monate = €{schedule.monthlyRate.toFixed(2)}
                   <br />
                   • Anschaffung: {monthName} {purchaseDate.getFullYear()} 
-                  ({monthName === 'Januar' ? 'Jan' : monthName.substring(0, 3)}-Dez = {12 - purchaseDate.getMonth()} Monate)
+                  ({monthShort}-Dez = {12 - purchaseDate.getMonth()} Monate)
                   <br />
                   • Restliche: {totalMonths - (12 - purchaseDate.getMonth())} Monate über {schedule.years.length - 1} Jahre verteilt
                   <br />
-                  • Letztes Jahr: {purchaseDate.getMonth()} Monate (Jan-{monthName === 'Januar' ? 'Jan' : monthName.substring(0, 3)})
+                  • Letztes Jahr: {purchaseDate.getMonth()} Monate (Jan-{monthShort})
                 </>
               )}
             </div>
