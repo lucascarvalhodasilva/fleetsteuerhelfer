@@ -171,7 +171,7 @@ export default function EquipmentForm({
           form="equipment-form"
           disabled={(editingId && !hasChanges) || isSubmitting}
           isLoading={isSubmitting}
-          className={`w-full px-6 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 text-sm shadow-sm ${
+          className={`w-full px-6 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 text-sm shadow-sm whitespace-nowrap ${
             (editingId && !hasChanges) || isSubmitting
               ? 'bg-muted text-muted-foreground cursor-not-allowed' 
               : editingId
