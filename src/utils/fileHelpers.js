@@ -5,15 +5,30 @@
  */
 
 /**
+ * Extracts the file extension from a filename
+ * 
+ * @param {string} fileName - The filename to analyze
+ * @returns {string} - The lowercase file extension without the dot, or empty string if no extension
+ */
+const getFileExtension = (fileName) => {
+  if (!fileName || typeof fileName !== 'string') return '';
+  
+  const lastDotIndex = fileName.lastIndexOf('.');
+  if (lastDotIndex === -1 || lastDotIndex === fileName.length - 1) {
+    return '';
+  }
+  
+  return fileName.slice(lastDotIndex + 1).toLowerCase();
+};
+
+/**
  * Gets the MIME type from a filename based on its extension
  * 
  * @param {string} fileName - The filename to analyze
  * @returns {string} - The MIME type (e.g., 'application/pdf', 'image/jpeg')
  */
 export const getMimeType = (fileName) => {
-  if (!fileName) return 'image/jpeg';
-  
-  const ext = fileName.toLowerCase().split('.').pop();
+  const ext = getFileExtension(fileName);
   
   if (ext === 'pdf') return 'application/pdf';
   if (['jpg', 'jpeg'].includes(ext)) return 'image/jpeg';
@@ -31,9 +46,7 @@ export const getMimeType = (fileName) => {
  * @returns {string} - The file type ('pdf' or 'image')
  */
 export const getFileType = (fileName) => {
-  if (!fileName) return 'image';
-  
-  const ext = fileName.toLowerCase().split('.').pop();
+  const ext = getFileExtension(fileName);
   
   if (ext === 'pdf') return 'pdf';
   
