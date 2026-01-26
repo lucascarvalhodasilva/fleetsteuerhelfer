@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSwipeable } from 'react-swipeable';
+import { DEFAULT_TAX_RATES } from '@/constants/taxRates';
 
 export default function FloatingScheduleCard({ 
   equipment, 
@@ -55,6 +56,9 @@ export default function FloatingScheduleCard({
 
   const currentSchedule = schedule || {};
   const isGWG = currentSchedule.type === 'GWG';
+  const gwgLimit = DEFAULT_TAX_RATES.gwgLimit;
+  // Calculate years from schedule data or default to 3
+  const depreciationYears = currentSchedule.years?.length || 3;
 
   return (
     <div
@@ -122,11 +126,11 @@ export default function FloatingScheduleCard({
           <div>
             <div className="text-xs text-muted-foreground mb-1">Nutzungsdauer</div>
             <div className="text-base font-bold text-foreground">
-              3 Jahre
+              {depreciationYears} {depreciationYears === 1 ? 'Jahr' : 'Jahre'}
             </div>
           </div>
           <div className="col-span-2">
-            <div className="text-xs text-muted-foreground mb-1">GWG-Grenze (€952)</div>
+            <div className="text-xs text-muted-foreground mb-1">GWG-Grenze (€{gwgLimit.toFixed(0)})</div>
             <div className={`text-base font-bold ${isGWG ? 'text-emerald-600' : 'text-foreground'}`}>
               {isGWG ? 'Ja - Sofortabschreibung' : 'Nein - Mehrjährig'}
             </div>
