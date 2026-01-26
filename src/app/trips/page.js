@@ -6,12 +6,14 @@ import TripForm from './_features/components/TripForm';
 import TripList from './_features/components/TripList';
 import FullScreenTableView from './_features/components/FullScreenTableView';
 import PDFViewer from '@/components/shared/PDFViewerDynamic';
+import { useUIContext } from '@/context/UIContext';
 
 export default function TripsPage() {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [highlightId, setHighlightId] = useState(null);
   const [showTripModal, setShowTripModal] = useState(false);
   const currentMonth = new Date().getMonth();
+  const { pushModal, removeModal, generateModalId } = useUIContext();
 
   const { 
     formData, 
@@ -69,6 +71,24 @@ export default function TripsPage() {
     setViewingReceipt,
     handleViewReceipt
   } = useTripList();
+
+  // Register receipt viewer modal with UIContext
+  useEffect(() => {
+    if (viewingReceipt) {
+      const modalId = generateModalId('receipt-viewer');
+      pushModal(modalId, () => setViewingReceipt(null));
+      return () => removeModal(modalId);
+    }
+  }, [viewingReceipt, pushModal, removeModal, setViewingReceipt, generateModalId]);
+
+  // Register trip form modal with UIContext
+  useEffect(() => {
+    if (showTripModal) {
+      const modalId = generateModalId('trip-form');
+      pushModal(modalId, handleModalClose);
+      return () => removeModal(modalId);
+    }
+  }, [showTripModal, handleModalClose, pushModal, removeModal, generateModalId]);
 
   return (
     <div className="bg-linear-to-br from-slate-50 via-blue-50 to-indigo-50 h-full overflow-hidden">
