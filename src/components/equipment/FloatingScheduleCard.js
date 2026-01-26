@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+ import React, { useState, useEffect } from 'react';
 import { useSwipeable } from 'react-swipeable';
 import { DEFAULT_TAX_RATES } from '@/constants/taxRates';
 
@@ -12,24 +12,43 @@ export default function FloatingScheduleCard({
 }) {
   const [dragY, setDragY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const [currentEquipment, setCurrentEquipment] = useState(equipment);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [currentSchedule, setCurrentSchedule] = useState(schedule);
+  const [isVisible, setIsVisible] = useState(false);
   
-  // Handle equipment change with smooth transition
+  // Handle equipment change - slide out and back in
   useEffect(() => {
-    if (equipment && equipment.id !== currentEquipment?.id && open) {
-      // Trigger transition
-      setIsTransitioning(true);
-      
-      // After slide-down animation completes, update content
-      setTimeout(() => {
+    if (open && equipment) {
+      if (currentEquipment && equipment.id !== currentEquipment.id) {
+        // Different equipment - slide down, swap content, slide back up
+        setIsVisible(false);
+        setTimeout(() => {
+          setCurrentEquipment(equipment);
+          setCurrentSchedule(schedule);
+          setTimeout(() => setIsVisible(true), 50);
+        }, 300);
+      } else if (!currentEquipment) {
+        // First open
         setCurrentEquipment(equipment);
-        setIsTransitioning(false);
-      }, 150); // Half of transition time for content swap
-    } else if (equipment) {
-      setCurrentEquipment(equipment);
+        setCurrentSchedule(schedule);
+        setTimeout(() => setIsVisible(true), 50);
+      } else {
+        // Same equipment, just update schedule
+        setCurrentSchedule(schedule);
+        if (!isVisible) setIsVisible(true);
+      }
+    } else if (!open) {
+      setIsVisible(false);
+      // Reset after animation completes
+      setTimeout(() => {
+        setCurrentEquipment(null);
+        setCurrentSchedule(null);
+        setIsClosing(false);
+        setDragY(0);
+      }, 300);
     }
-  }, [equipment, open]);
+  }, [equipment, schedule, open]);
   
   const handlers = useSwipeable({
     onSwiping: (eventData) => {
@@ -39,11 +58,16 @@ export default function FloatingScheduleCard({
       }
     },
     onSwiped: (eventData) => {
-      setIsDragging(false);
       if (eventData.deltaY > 50 || Math.abs(eventData.velocity) > 0.3) {
-        onClose();
-        setDragY(0);
+        // Mark as closing to enable smooth transition from current position
+        setIsClosing(true);
+        setIsDragging(false);
+        // Use requestAnimationFrame to ensure the transition starts from current drag position
+        requestAnimationFrame(() => {
+          onClose();
+        });
       } else {
+        setIsDragging(false);
         setDragY(0);
       }
     },
@@ -52,142 +76,145 @@ export default function FloatingScheduleCard({
     delta: 10
   });
 
-  if (!open || !currentEquipment) return null;
+  if (!currentEquipment) return null;
 
-  const currentSchedule = schedule || {};
-  const isGWG = currentSchedule.type === 'GWG';
+  const scheduleData = currentSchedule || {};
+  const isGWG = scheduleData.type === 'GWG';
   const gwgLimit = DEFAULT_TAX_RATES.gwgLimit;
   // Calculate years from schedule data or default to 3
-  const depreciationYears = currentSchedule.years?.length || 3;
+  const depreciationYears = scheduleData.years?.length || 3;
+
+  // Calculate transform: when closing, start from drag position and go to hidden
+  const getTransform = () => {
+    if (!isVisible && isClosing) {
+      // Closing from drag - animate from dragY to off-screen
+      return `translateY(calc(100% + 32px))`;
+    }
+    if (isVisible) {
+      return `translateY(${dragY}px)`;
+    }
+    return `translateY(calc(100% + 32px))`;
+  };
 
   return (
-    <div
-      {...handlers}
-      className={`fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t border-border/30 rounded-t-2xl p-6 z-[1200] overflow-y-auto transition-transform ${
-        isDragging ? '' : 'duration-300 ease-in-out'
-      }`}
-      style={{
-        maxHeight: '50vh',
-        boxShadow: '0px -4px 20px rgba(0, 0, 0, 0.15)',
-        transform: `translateY(${open ? dragY : '100%'}px)`,
-        pointerEvents: 'auto',
-        animation: open && !isTransitioning ? 'slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1)' : 'none'
-      }}
-    >
-      <style jsx>{`
-        @keyframes slideUp {
-          from {
-            transform: translateY(100%);
-          }
-          to {
-            transform: translateY(0);
-          }
-        }
-      `}</style>
-
-      {/* Drag Handle */}
-      <div className="flex items-center justify-center mb-4">
-        <div 
-          className="w-10 h-1 bg-muted-foreground/30 rounded-full cursor-grab active:cursor-grabbing"
-        />
-      </div>
-
-      {/* Content with fade transition */}
-      <div 
-        className={`transition-opacity duration-150 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}
+    <>
+      {/* Floating Card */}
+      <div
+        {...handlers}
+        className="fixed bottom-4 left-4 right-4 bg-card/95 backdrop-blur-sm border border-border/30 rounded-2xl p-4 z-[1200] overflow-hidden shadow-xl"
+        style={{
+          height: '280px',
+          transform: getTransform(),
+          transition: isDragging ? 'none' : 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+          pointerEvents: isVisible ? 'auto' : 'none',
+        }}
       >
+        {/* Drag Handle */}
+        <div className="flex items-center justify-center mb-3">
+          <div 
+            className="w-10 h-1 bg-muted-foreground/20 rounded-full cursor-grab active:cursor-grabbing"
+          />
+        </div>
+
+        {/* Scrollable Content */}
+        <div 
+          className="overflow-y-auto"
+          style={{ height: 'calc(280px - 56px)' }}
+        >
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-            <span className="text-2xl">💻</span>
-            {currentEquipment.name || 'Arbeitsmittel'}
-          </h3>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center">
+              <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">
+                {currentEquipment.name || 'Arbeitsmittel'}
+              </h3>
+              <p className="text-[10px] text-muted-foreground">Abschreibungsdetails</p>
+            </div>
+          </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg bg-muted/50 hover:bg-muted transition-colors flex items-center justify-center"
+            className="w-8 h-8 rounded-lg bg-white/60 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
             aria-label="Schließen"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
-        <div className="h-px bg-border/30 mb-4" />
-
         {/* Equipment Details */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div>
-            <div className="text-xs text-muted-foreground mb-1">Kaufpreis</div>
-            <div className="text-base font-bold text-foreground">
-              €{parseFloat(currentEquipment.price || 0).toFixed(2)}
+        <div className="grid grid-cols-3 gap-2 mb-4">
+          <div className="p-2.5 rounded-xl bg-white/60 dark:bg-white/5 border border-border/30">
+            <div className="text-[10px] text-muted-foreground uppercase tracking-wide">Kaufpreis</div>
+            <div className="text-sm font-bold text-foreground mt-0.5">
+              {parseFloat(currentEquipment.price || 0).toFixed(2)} €
             </div>
           </div>
-          <div>
-            <div className="text-xs text-muted-foreground mb-1">Nutzungsdauer</div>
-            <div className="text-base font-bold text-foreground">
+          <div className="p-2.5 rounded-xl bg-white/60 dark:bg-white/5 border border-border/30">
+            <div className="text-[10px] text-muted-foreground uppercase tracking-wide">Nutzung</div>
+            <div className="text-sm font-bold text-foreground mt-0.5">
               {depreciationYears} {depreciationYears === 1 ? 'Jahr' : 'Jahre'}
             </div>
           </div>
-          <div className="col-span-2">
-            <div className="text-xs text-muted-foreground mb-1">GWG-Grenze (€{gwgLimit.toFixed(0)})</div>
-            <div className={`text-base font-bold ${isGWG ? 'text-emerald-600' : 'text-foreground'}`}>
-              {isGWG ? 'Ja - Sofortabschreibung' : 'Nein - Mehrjährig'}
+          <div className="p-2.5 rounded-xl bg-white/60 dark:bg-white/5 border border-border/30">
+            <div className="text-[10px] text-muted-foreground uppercase tracking-wide">GWG</div>
+            <div className={`text-sm font-bold mt-0.5 ${isGWG ? 'text-emerald-600' : 'text-foreground'}`}>
+              {isGWG ? 'Ja' : 'Nein'}
             </div>
           </div>
         </div>
 
         {/* Depreciation Schedule */}
-        {currentSchedule.years && currentSchedule.years.length > 0 && (
-          <>
-            <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-              <span>📅</span>
-              Abschreibungsplan
-            </h4>
-            <div className="bg-muted/20 rounded-xl p-4 mb-4">
-              {currentSchedule.years.map((yearData, index) => (
+        {scheduleData.years && scheduleData.years.length > 0 && (
+          <div className="rounded-xl bg-white/60 dark:bg-white/5 border border-border/30 p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-5 h-5 rounded-md bg-blue-500/10 flex items-center justify-center">
+                <svg className="w-3 h-3 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <span className="text-xs font-semibold text-foreground">Abschreibungsplan</span>
+            </div>
+            
+            <div className="space-y-0">
+              {scheduleData.years.map((yearData, index) => (
                 <div
                   key={yearData.year}
-                  className={`flex items-center justify-between py-2 ${
-                    index < currentSchedule.years.length - 1 ? 'border-b border-border/20' : ''
+                  className={`flex items-center justify-between py-1.5 ${
+                    index < scheduleData.years.length - 1 ? 'border-b border-border/20' : ''
                   }`}
                 >
-                  <div className="text-sm font-medium text-foreground">
+                  <div className="text-xs font-medium text-foreground flex items-center gap-1.5">
                     {yearData.year}
                     {yearData.isCurrentYear && (
-                      <span className="ml-2 text-[9px] px-1.5 py-0.5 rounded bg-blue-500 text-white font-semibold">
+                      <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-primary text-white font-medium">
                         AKTUELL
                       </span>
                     )}
                   </div>
-                  <div className="text-sm font-semibold text-blue-600">
-                    €{yearData.deduction.toFixed(2)}
+                  <div className="text-xs font-semibold text-blue-600">
+                    +{yearData.deduction.toFixed(2)} €
                   </div>
                 </div>
               ))}
               
               {/* Restwert */}
-              <div className="flex items-center justify-between pt-3 mt-2 border-t-2 border-border/30">
-                <div className="text-sm font-bold text-foreground">Restwert</div>
-                <div className="text-sm font-bold text-emerald-600">
-                  €{currentSchedule.bookValue?.toFixed(2) || '0.00'}
+              <div className="flex items-center justify-between pt-2 mt-1 border-t border-border/30">
+                <div className="text-xs font-semibold text-muted-foreground">Restwert</div>
+                <div className="text-xs font-bold text-emerald-600">
+                  {scheduleData.bookValue?.toFixed(2) || '0.00'} €
                 </div>
               </div>
             </div>
-          </>
+          </div>
         )}
-
-        {/* Receipt Preview */}
-        {currentEquipment.receiptFileName && (
-          <button
-            onClick={() => onViewReceipt && onViewReceipt(currentEquipment.receiptFileName)}
-            className="w-full py-3 px-4 rounded-xl border-2 border-border/50 hover:border-blue-500/50 hover:bg-blue-500/5 transition-colors flex items-center justify-center gap-2 text-sm font-medium text-foreground"
-          >
-            <span>📄</span>
-            Beleg anzeigen
-          </button>
-        )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
