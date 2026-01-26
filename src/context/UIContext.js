@@ -1,11 +1,12 @@
 "use client";
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
 
 const UIContext = createContext();
 
 export function UIProvider({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [modalStack, setModalStack] = useState([]);
+  const modalIdCounter = useRef(0);
 
   const openSidebar = useCallback(() => {
     setSidebarOpen(true);
@@ -16,7 +17,14 @@ export function UIProvider({ children }) {
   }, []);
 
   const pushModal = useCallback((modalId, closeHandler) => {
-    setModalStack(prev => [...prev, { id: modalId, close: closeHandler }]);
+    setModalStack(prev => {
+      // Prevent duplicate modal IDs
+      if (prev.some(item => item.id === modalId)) {
+        console.warn(`Modal with ID ${modalId} is already in the stack`);
+        return prev;
+      }
+      return [...prev, { id: modalId, close: closeHandler }];
+    });
   }, []);
 
   const popModal = useCallback(() => {
@@ -35,6 +43,11 @@ export function UIProvider({ children }) {
     setModalStack(prev => prev.filter(item => item.id !== modalId));
   }, []);
 
+  const generateModalId = useCallback((prefix) => {
+    modalIdCounter.current += 1;
+    return `${prefix}-${modalIdCounter.current}-${Date.now()}`;
+  }, []);
+
   const hasOpenModals = modalStack.length > 0;
 
   return (
@@ -46,6 +59,7 @@ export function UIProvider({ children }) {
       pushModal,
       popModal,
       removeModal,
+      generateModalId,
       hasOpenModals
     }}>
       {children}

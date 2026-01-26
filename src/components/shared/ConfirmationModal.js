@@ -3,15 +3,15 @@ import { createPortal } from 'react-dom';
 import { useUIContext } from '@/context/UIContext';
 
 export default function ConfirmationModal({ isOpen, onClose, onConfirm, title, message, confirmText = "Löschen", cancelText = "Abbrechen" }) {
-  const { pushModal, removeModal } = useUIContext();
+  const { pushModal, removeModal, generateModalId } = useUIContext();
 
   useEffect(() => {
     if (isOpen) {
-      const modalId = `confirmation-${Date.now()}`;
+      const modalId = generateModalId('confirmation');
       pushModal(modalId, onClose);
       return () => removeModal(modalId);
     }
-  }, [isOpen, onClose, pushModal, removeModal]);
+  }, [isOpen, onClose, pushModal, removeModal, generateModalId]);
 
   if (!isOpen) return null;
 

@@ -11,7 +11,7 @@ import { useUIContext } from '@/context/UIContext';
 export default function EquipmentPage() {
   const [highlightId, setHighlightId] = useState(null);
   const [showEquipmentModal, setShowEquipmentModal] = useState(false);
-  const { pushModal, removeModal } = useUIContext();
+  const { pushModal, removeModal, generateModalId } = useUIContext();
 
   const {
     formData,
@@ -71,27 +71,27 @@ export default function EquipmentPage() {
   // Register modals with UIContext
   useEffect(() => {
     if (viewingReceipt) {
-      const modalId = `receipt-viewer-${Date.now()}`;
+      const modalId = generateModalId('receipt-viewer');
       pushModal(modalId, () => setViewingReceipt(null));
       return () => removeModal(modalId);
     }
-  }, [viewingReceipt, pushModal, removeModal]);
+  }, [viewingReceipt, pushModal, removeModal, setViewingReceipt, generateModalId]);
 
   useEffect(() => {
     if (showEquipmentModal) {
-      const modalId = `equipment-form-${Date.now()}`;
+      const modalId = generateModalId('equipment-form');
       pushModal(modalId, handleModalClose);
       return () => removeModal(modalId);
     }
-  }, [showEquipmentModal, pushModal, removeModal]);
+  }, [showEquipmentModal, handleModalClose, pushModal, removeModal, generateModalId]);
 
   useEffect(() => {
     if (isFullScreen) {
-      const modalId = `fullscreen-table-${Date.now()}`;
+      const modalId = generateModalId('fullscreen-table');
       pushModal(modalId, () => setIsFullScreen(false));
       return () => removeModal(modalId);
     }
-  }, [isFullScreen, pushModal, removeModal]);
+  }, [isFullScreen, setIsFullScreen, pushModal, removeModal, generateModalId]);
 
   const totalDeductible = filteredEquipmentEntries.reduce((sum, entry) => sum + (entry.deductibleAmount || 0), 0);
 

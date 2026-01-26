@@ -9,7 +9,7 @@ import { useUIContext } from '@/context/UIContext';
 export default function ExpensesPage() {
   const [highlightId, setHighlightId] = useState(null);
   const [showExpenseModal, setShowExpenseModal] = useState(false);
-  const { pushModal, removeModal } = useUIContext();
+  const { pushModal, removeModal, generateModalId } = useUIContext();
   
   const {
     formData,
@@ -72,27 +72,27 @@ export default function ExpensesPage() {
   // Register modals with UIContext
   useEffect(() => {
     if (viewingReceipt) {
-      const modalId = `receipt-viewer-${Date.now()}`;
+      const modalId = generateModalId('receipt-viewer');
       pushModal(modalId, () => setViewingReceipt(null));
       return () => removeModal(modalId);
     }
-  }, [viewingReceipt, pushModal, removeModal]);
+  }, [viewingReceipt, pushModal, removeModal, setViewingReceipt, generateModalId]);
 
   useEffect(() => {
     if (showExpenseModal) {
-      const modalId = `expense-form-${Date.now()}`;
+      const modalId = generateModalId('expense-form');
       pushModal(modalId, handleModalClose);
       return () => removeModal(modalId);
     }
-  }, [showExpenseModal, pushModal, removeModal]);
+  }, [showExpenseModal, handleModalClose, pushModal, removeModal, generateModalId]);
 
   useEffect(() => {
     if (isFullScreen) {
-      const modalId = `fullscreen-table-${Date.now()}`;
+      const modalId = generateModalId('fullscreen-table');
       pushModal(modalId, () => setIsFullScreen(false));
       return () => removeModal(modalId);
     }
-  }, [isFullScreen, pushModal, removeModal]);
+  }, [isFullScreen, setIsFullScreen, pushModal, removeModal, generateModalId]);
 
   const monthNames = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
   const totalAmount = filteredEntries.reduce((sum, entry) => sum + entry.amount, 0);

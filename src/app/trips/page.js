@@ -13,7 +13,7 @@ export default function TripsPage() {
   const [highlightId, setHighlightId] = useState(null);
   const [showTripModal, setShowTripModal] = useState(false);
   const currentMonth = new Date().getMonth();
-  const { pushModal, removeModal } = useUIContext();
+  const { pushModal, removeModal, generateModalId } = useUIContext();
 
   const { 
     formData, 
@@ -75,20 +75,20 @@ export default function TripsPage() {
   // Register receipt viewer modal with UIContext
   useEffect(() => {
     if (viewingReceipt) {
-      const modalId = `receipt-viewer-${Date.now()}`;
+      const modalId = generateModalId('receipt-viewer');
       pushModal(modalId, () => setViewingReceipt(null));
       return () => removeModal(modalId);
     }
-  }, [viewingReceipt, pushModal, removeModal]);
+  }, [viewingReceipt, pushModal, removeModal, setViewingReceipt, generateModalId]);
 
   // Register trip form modal with UIContext
   useEffect(() => {
     if (showTripModal) {
-      const modalId = `trip-form-${Date.now()}`;
+      const modalId = generateModalId('trip-form');
       pushModal(modalId, handleModalClose);
       return () => removeModal(modalId);
     }
-  }, [showTripModal, pushModal, removeModal]);
+  }, [showTripModal, handleModalClose, pushModal, removeModal, generateModalId]);
 
   return (
     <div className="bg-linear-to-br from-slate-50 via-blue-50 to-indigo-50 h-full overflow-hidden">
