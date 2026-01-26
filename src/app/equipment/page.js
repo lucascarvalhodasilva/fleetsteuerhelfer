@@ -4,6 +4,7 @@ import { useEquipmentForm } from './_features/hooks/useEquipmentForm';
 import { useEquipmentList } from './_features/hooks/useEquipmentList';
 import EquipmentForm from './_features/components/EquipmentForm';
 import EquipmentList from './_features/components/EquipmentList';
+import PDFViewer from '@/components/shared/PDFViewerDynamic';
 import { formatDate } from '@/utils/dateFormatter';
 
 export default function EquipmentPage() {
@@ -82,8 +83,8 @@ export default function EquipmentPage() {
             setIsFullScreen={setIsFullScreen}
             handleViewReceipt={handleViewReceipt}
             highlightId={highlightId}
-            onEdit={(entry) => {
-              startEdit(entry);
+            onEdit={async (entry) => {
+              await startEdit(entry);
               setShowEquipmentModal(true);
             }}
             onAddEquipment={() => setShowEquipmentModal(true)}
@@ -257,19 +258,28 @@ export default function EquipmentPage() {
         {/* Receipt Viewer Modal */}
         {viewingReceipt && (
           <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-9999 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setViewingReceipt(null)}>
-            <div className="relative max-w-4xl max-h-[90vh] w-full flex flex-col items-center">
-              <img 
-                src={viewingReceipt} 
-                alt="Beleg" 
-                className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
-                onClick={(e) => e.stopPropagation()}
-              />
-              <button 
-                onClick={() => setViewingReceipt(null)}
-                className="mt-4 px-6 py-2.5 bg-white text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors shadow-lg"
-              >
-                Schließen
-              </button>
+            <div className="relative max-w-4xl max-h-[90vh] w-full h-full flex flex-col items-center">
+              {viewingReceipt.type === 'pdf' ? (
+                <PDFViewer 
+                  source={viewingReceipt.data}
+                  onClose={() => setViewingReceipt(null)}
+                />
+              ) : (
+                <>
+                  <img 
+                    src={viewingReceipt.data} 
+                    alt="Beleg" 
+                    className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <button 
+                    onClick={() => setViewingReceipt(null)}
+                    className="mt-4 px-6 py-2.5 bg-white text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors shadow-lg"
+                  >
+                    Schließen
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}

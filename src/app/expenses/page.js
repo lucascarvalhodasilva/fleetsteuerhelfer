@@ -50,8 +50,8 @@ export default function ExpensesPage() {
     cancelEdit(); // Always reset form when closing modal
   };
 
-  const handleEdit = (entry) => {
-    startEdit(entry);
+  const handleEdit = async (entry) => {
+    await startEdit(entry);
     setShowExpenseModal(true);
   };
 

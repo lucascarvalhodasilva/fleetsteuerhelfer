@@ -185,8 +185,14 @@ export const useEquipmentForm = () => {
 
     let loadedReceipt = null;
     let loadedPath = null;
+    let loadedReceiptType = 'image';
 
     if (entry.receiptFileName) {
+      // Determine file type from filename
+      const isPdf = entry.receiptFileName.toLowerCase().endsWith('.pdf');
+      loadedReceiptType = isPdf ? 'pdf' : 'image';
+      const extension = isPdf ? 'pdf' : 'jpg';
+
       try {
         // Try reading from Documents/receipts/
         let fileData;
@@ -210,8 +216,8 @@ export const useEquipmentForm = () => {
         }
 
         if (fileData) {
-          // Write to temp cache
-          const tempFileName = `restored_equipment_${Date.now()}.jpg`;
+          // Write to temp cache with correct extension
+          const tempFileName = `restored_equipment_${Date.now()}.${extension}`;
           const tempPath = `temp/equipment/${tempFileName}`;
           
           await Filesystem.writeFile({
@@ -233,6 +239,7 @@ export const useEquipmentForm = () => {
     setInitialEditData(editData);
     setTempReceipt(loadedReceipt);
     setTempReceiptPath(loadedPath);
+    setTempReceiptType(loadedReceiptType);
     setInitialReceiptPath(loadedPath);
     setEditingId(entry.id);
   };

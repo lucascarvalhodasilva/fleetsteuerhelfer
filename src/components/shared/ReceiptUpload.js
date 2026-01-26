@@ -1,20 +1,27 @@
 'use client';
 
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { createPortal } from 'react-dom';
 import { CameraSource } from '@capacitor/camera';
+import dynamic from 'next/dynamic';
 
-const PDFViewerComponent = lazy(() => import('./PDFViewer'));
+const PDFViewerComponent = dynamic(() => import('./PDFViewer'), { ssr: false });
 
 // Convert base64 to Uint8Array for react-pdf
 const base64ToUint8Array = (base64) => {
-  const cleaned = base64.replace(/^data:application\/pdf;base64,/, '');
-  const binary = atob(cleaned);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
+  try {
+    // Remove any data URL prefix if present
+    const cleaned = base64.replace(/^data:[^;]+;base64,/, '');
+    const binary = atob(cleaned);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes;
+  } catch (e) {
+    console.error('base64ToUint8Array failed:', e);
+    return null;
   }
-  return bytes;
 };
 
 export default function ReceiptUpload({
@@ -29,6 +36,7 @@ export default function ReceiptUpload({
 }) {
   const [showViewer, setShowViewer] = useState(false);
   const [pdfData, setPdfData] = useState(null);
+  const [pdfError, setPdfError] = useState(false);
 
   // Lock body scroll when viewer is open
   useEffect(() => {
@@ -36,18 +44,26 @@ export default function ReceiptUpload({
     return () => { document.body.style.overflow = ''; };
   }, [showViewer]);
 
-  // Convert PDF for react-pdf
+  // Convert PDF for react-pdf - do this whenever receipt changes, not just when viewer opens
   useEffect(() => {
-    if (showViewer && receiptType === 'pdf' && receipt) {
-      try {
-        setPdfData(base64ToUint8Array(receipt));
-      } catch (e) {
-        console.error('PDF conversion failed:', e);
-      }
+    if (receiptType === 'pdf' && receipt) {
+      setPdfError(false);
+      // Use setTimeout to ensure this doesn't block the render
+      const timer = setTimeout(() => {
+        const converted = base64ToUint8Array(receipt);
+        if (converted) {
+          setPdfData(converted);
+        } else {
+          setPdfError(true);
+          setPdfData(null);
+        }
+      }, 0);
+      return () => clearTimeout(timer);
     } else {
       setPdfData(null);
+      setPdfError(false);
     }
-  }, [showViewer, receiptType, receipt]);
+  }, [receiptType, receipt]);
 
   // Color themes
   const themes = {
@@ -91,7 +107,9 @@ export default function ReceiptUpload({
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
           {receiptType === 'pdf' ? (
             <Suspense fallback={<Spinner />}>
-              {pdfData ? (
+              {pdfError ? (
+                <ErrorState onClose={() => setShowViewer(false)} />
+              ) : pdfData ? (
                 <div className="relative w-[92vw] h-[92vh]" onClick={(e) => e.stopPropagation()}>
                   <PDFViewerComponent source={{ data: pdfData }} onClose={() => setShowViewer(false)} />
                 </div>
@@ -165,7 +183,25 @@ const LoadingState = ({ onCancel }) => (
   </div>
 );
 
-
+const ErrorState = ({ onClose }) => (
+  <div className="flex flex-col items-center gap-5 text-white px-6" onClick={(e) => e.stopPropagation()}>
+    <div className="w-20 h-20 rounded-full bg-red-500/20 flex items-center justify-center">
+      <svg className="w-10 h-10 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+      </svg>
+    </div>
+    <div className="text-center max-w-xs">
+      <p className="text-base font-medium mb-2">PDF konnte nicht geladen werden</p>
+      <p className="text-sm text-white/70 leading-relaxed">
+        Es gab ein Problem beim Laden der PDF-Vorschau. Das Dokument ist möglicherweise beschädigt.
+      </p>
+    </div>
+    <button onClick={onClose} className="mt-2 flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-medium transition-all">
+      <XIcon />
+      Schließen
+    </button>
+  </div>
+);
 
 const Spinner = () => <div className="w-10 h-10 border-4 border-white/20 border-t-white rounded-full animate-spin" />;
 

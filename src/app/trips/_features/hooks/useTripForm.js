@@ -242,8 +242,9 @@ export const useTripForm = () => {
       const MM = String(now.getMinutes()).padStart(2, '0');
       const timeStr = `${yyyy}${mm}${dd}${HH}${MM}`;
 
-      // Define filenames
-      const fileNameInternal = `transport_${tripId}_${timeStr}.jpg`;
+      // Define filenames with correct extension
+      const extension = tempPublicTransportReceiptType === 'pdf' ? 'pdf' : 'jpg';
+      const fileNameInternal = `transport_${tripId}_${timeStr}.${extension}`;
 
       // Write to Directory.Documents
       await Filesystem.writeFile({
@@ -475,8 +476,14 @@ export const useTripForm = () => {
     
     let loadedReceipt = null;
     let loadedPath = null;
+    let loadedReceiptType = 'image';
 
     if (transportEntry && transportEntry.receiptFileName) {
+      // Determine file type from filename
+      const isPdf = transportEntry.receiptFileName.toLowerCase().endsWith('.pdf');
+      loadedReceiptType = isPdf ? 'pdf' : 'image';
+      const extension = isPdf ? 'pdf' : 'jpg';
+
       try {
         // Try reading from Documents/receipts/ (where we save it)
         let fileData;
@@ -500,8 +507,8 @@ export const useTripForm = () => {
         }
 
         if (fileData) {
-          // Write to temp cache to mimic new upload (so it can be saved again)
-          const tempFileName = `restored_${Date.now()}.jpg`;
+          // Write to temp cache with correct extension
+          const tempFileName = `restored_${Date.now()}.${extension}`;
           const tempPath = `temp/transport/${tempFileName}`;
           
           await Filesystem.writeFile({
@@ -523,6 +530,7 @@ export const useTripForm = () => {
     setInitialEditData(editData);
     setTempPublicTransportReceipt(loadedReceipt);
     setTempPublicTransportReceiptPath(loadedPath);
+    setTempPublicTransportReceiptType(loadedReceiptType);
     setInitialReceiptPath(loadedPath);
     setEditingId(entry.id);
   };

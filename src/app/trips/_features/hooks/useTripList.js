@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import { Filesystem, Directory } from '@capacitor/filesystem';
+import { getMimeType, getFileType, base64ToUint8Array } from '@/utils/fileHelpers';
 
 /**
  * Hook to manage trip list data and operations.
@@ -22,7 +23,23 @@ export const useTripList = () => {
         path: `receipts/${fileName}`,
         directory: Directory.Documents
       });
-      return `data:image/jpeg;base64,${file.data}`;
+      
+      const fileType = getFileType(fileName);
+      const mimeType = getMimeType(fileName);
+      
+      if (fileType === 'pdf') {
+        // For PDFs, return Uint8Array format for react-pdf
+        return {
+          data: { data: base64ToUint8Array(file.data) },
+          type: 'pdf'
+        };
+      } else {
+        // For images, return data URI
+        return {
+          data: `data:${mimeType};base64,${file.data}`,
+          type: 'image'
+        };
+      }
     } catch (e) {
       console.error('Error loading receipt:', e);
       return null;
@@ -30,9 +47,9 @@ export const useTripList = () => {
   };
 
   const handleViewReceipt = async (fileName) => {
-    const base64 = await loadReceipt(fileName);
-    if (base64) {
-      setViewingReceipt(base64);
+    const receipt = await loadReceipt(fileName);
+    if (receipt) {
+      setViewingReceipt(receipt);
     } else {
       alert('Beleg konnte nicht geladen werden.');
     }

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { formatDate } from '@/utils/dateFormatter';
 import ConfirmationModal from '@/components/shared/ConfirmationModal';
+import PDFViewer from '@/components/shared/PDFViewerDynamic';
 
 export default function ExpenseList({ 
   filteredEntries, 
@@ -316,19 +317,28 @@ export default function ExpenseList({
           className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200" 
           onClick={() => setViewingReceipt(null)}
         >
-          <div className="relative flex flex-col items-center max-w-4xl w-full max-h-[90vh]">
-            <img 
-              src={`data:image/jpeg;base64,${viewingReceipt}`} 
-              alt="Beleg" 
-              className="max-w-full max-h-[80vh] rounded-lg bg-black/50 shadow-2xl object-contain"
-              onClick={(e) => e.stopPropagation()}
-            />
-            <button 
-              onClick={() => setViewingReceipt(null)}
-              className="mt-4 px-6 py-2.5 font-medium rounded-xl bg-white text-gray-700 shadow-lg transition-colors hover:bg-gray-100"
-            >
-              Schließen
-            </button>
+          <div className="relative flex flex-col items-center max-w-4xl w-full h-full">
+            {viewingReceipt.type === 'pdf' ? (
+              <PDFViewer 
+                source={viewingReceipt.data}
+                onClose={() => setViewingReceipt(null)}
+              />
+            ) : (
+              <>
+                <img 
+                  src={viewingReceipt.data} 
+                  alt="Beleg" 
+                  className="max-w-full max-h-[80vh] rounded-lg bg-black/50 shadow-2xl object-contain"
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <button 
+                  onClick={() => setViewingReceipt(null)}
+                  className="mt-4 px-6 py-2.5 font-medium rounded-xl bg-white text-gray-700 shadow-lg transition-colors hover:bg-gray-100"
+                >
+                  Schließen
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}

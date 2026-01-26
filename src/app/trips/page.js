@@ -5,6 +5,7 @@ import { useTripList } from './_features/hooks/useTripList';
 import TripForm from './_features/components/TripForm';
 import TripList from './_features/components/TripList';
 import FullScreenTableView from './_features/components/FullScreenTableView';
+import PDFViewer from '@/components/shared/PDFViewerDynamic';
 
 export default function TripsPage() {
   const [isFullScreen, setIsFullScreen] = useState(false);
@@ -85,8 +86,8 @@ export default function TripsPage() {
             setIsFullScreen={setIsFullScreen}
             highlightId={highlightId}
             handleViewReceipt={handleViewReceipt}
-            onEdit={(entry) => {
-              startEdit(entry);
+            onEdit={async (entry) => {
+              await startEdit(entry);
               setShowTripModal(true);
             }}
             onAddTrip={() => setShowTripModal(true)}
@@ -125,19 +126,28 @@ export default function TripsPage() {
         {/* Receipt Viewer Modal */}
         {viewingReceipt && (
           <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setViewingReceipt(null)}>
-            <div className="relative max-w-3xl w-full max-h-[90vh] flex flex-col items-center">
-              <img 
-                src={viewingReceipt} 
-                alt="Beleg" 
-                className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
-                onClick={e => e.stopPropagation()}
-              />
-              <button 
-                onClick={() => setViewingReceipt(null)}
-                className="mt-4 px-6 py-2.5 bg-white text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors shadow-lg"
-              >
-                Schließen
-              </button>
+            <div className="relative max-w-3xl w-full h-full flex flex-col items-center">
+              {viewingReceipt.type === 'pdf' ? (
+                <PDFViewer 
+                  source={viewingReceipt.data}
+                  onClose={() => setViewingReceipt(null)}
+                />
+              ) : (
+                <>
+                  <img 
+                    src={viewingReceipt.data} 
+                    alt="Beleg" 
+                    className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
+                    onClick={e => e.stopPropagation()}
+                  />
+                  <button 
+                    onClick={() => setViewingReceipt(null)}
+                    className="mt-4 px-6 py-2.5 bg-white text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors shadow-lg"
+                  >
+                    Schließen
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}

@@ -3,6 +3,7 @@ import { useAppContext } from '@/context/AppContext';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { validateFile } from '@/utils/fileValidation';
+import { getMimeType, getFileType, base64ToUint8Array } from '@/utils/fileHelpers';
 
 export const useExpenses = () => {
   const { expenseEntries, addExpenseEntry, deleteExpenseEntry, selectedYear } = useAppContext();
@@ -158,9 +159,10 @@ export const useExpenses = () => {
       const MM = String(now.getMinutes()).padStart(2, '0');
       const timeStr = `${yyyy}${mm}${dd}${HH}${MM}`;
 
-      // Define filenames
-      const fileNameInternal = `expense_${entryId}_${timeStr}.jpg`;
-      const fileNameUser = `ausgabe_${entryId}_${timeStr}.jpg`;
+      // Define filenames with correct extension
+      const extension = tempExpenseReceiptType === 'pdf' ? 'pdf' : 'jpg';
+      const fileNameInternal = `expense_${entryId}_${timeStr}.${extension}`;
+      const fileNameUser = `ausgabe_${entryId}_${timeStr}.${extension}`;
 
       // Write to Directory.Documents
       await Filesystem.writeFile({
@@ -189,7 +191,23 @@ export const useExpenses = () => {
         path: `receipts/${fileName}`,
         directory: Directory.Documents
       });
-      return file.data;
+      
+      const fileType = getFileType(fileName);
+      const mimeType = getMimeType(fileName);
+      
+      if (fileType === 'pdf') {
+        // For PDFs, return Uint8Array format for react-pdf
+        return {
+          data: { data: base64ToUint8Array(file.data) },
+          type: 'pdf'
+        };
+      } else {
+        // For images, return data URI
+        return {
+          data: `data:${mimeType};base64,${file.data}`,
+          type: 'image'
+        };
+      }
     } catch (e) {
       console.error('Error loading receipt:', e);
       return null;
@@ -198,9 +216,9 @@ export const useExpenses = () => {
 
   const handleViewReceipt = async (entry) => {
     if (entry.receiptFileName) {
-      const base64Data = await loadReceipt(entry.receiptFileName);
-      if (base64Data) {
-        setViewingReceipt(base64Data);
+      const receipt = await loadReceipt(entry.receiptFileName);
+      if (receipt) {
+        setViewingReceipt(receipt);
       }
     }
   };
@@ -295,8 +313,14 @@ export const useExpenses = () => {
 
     let loadedReceipt = null;
     let loadedPath = null;
+    let loadedReceiptType = 'image';
 
     if (entry.receiptFileName) {
+      // Determine file type from filename
+      const isPdf = entry.receiptFileName.toLowerCase().endsWith('.pdf');
+      loadedReceiptType = isPdf ? 'pdf' : 'image';
+      const extension = isPdf ? 'pdf' : 'jpg';
+
       try {
         // Try reading from Documents/receipts/
         let fileData;
@@ -320,8 +344,8 @@ export const useExpenses = () => {
         }
 
         if (fileData) {
-          // Write to temp cache
-          const tempFileName = `restored_expense_${Date.now()}.jpg`;
+          // Write to temp cache with correct extension
+          const tempFileName = `restored_expense_${Date.now()}.${extension}`;
           const tempPath = `temp/expenses/${tempFileName}`;
           
           await Filesystem.writeFile({
@@ -343,6 +367,7 @@ export const useExpenses = () => {
     setInitialEditData(editData);
     setTempExpenseReceipt(loadedReceipt);
     setTempExpenseReceiptPath(loadedPath);
+    setTempExpenseReceiptType(loadedReceiptType);
     setInitialReceiptPath(loadedPath);
     setEditingId(entry.id);
   };
