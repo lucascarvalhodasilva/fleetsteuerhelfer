@@ -86,8 +86,8 @@ export default function TripsPage() {
             setIsFullScreen={setIsFullScreen}
             highlightId={highlightId}
             handleViewReceipt={handleViewReceipt}
-            onEdit={(entry) => {
-              startEdit(entry);
+            onEdit={async (entry) => {
+              await startEdit(entry);
               setShowTripModal(true);
             }}
             onAddTrip={() => setShowTripModal(true)}

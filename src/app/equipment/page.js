@@ -83,8 +83,8 @@ export default function EquipmentPage() {
             setIsFullScreen={setIsFullScreen}
             handleViewReceipt={handleViewReceipt}
             highlightId={highlightId}
-            onEdit={(entry) => {
-              startEdit(entry);
+            onEdit={async (entry) => {
+              await startEdit(entry);
               setShowEquipmentModal(true);
             }}
             onAddEquipment={() => setShowEquipmentModal(true)}
