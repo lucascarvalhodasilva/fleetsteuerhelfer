@@ -3,7 +3,7 @@ import { useAppContext } from '@/context/AppContext';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { validateFile } from '@/utils/fileValidation';
-import { getMimeType, getFileType } from '@/utils/fileHelpers';
+import { getMimeType, getFileType, base64ToUint8Array } from '@/utils/fileHelpers';
 
 export const useExpenses = () => {
   const { expenseEntries, addExpenseEntry, deleteExpenseEntry, selectedYear } = useAppContext();
@@ -192,11 +192,22 @@ export const useExpenses = () => {
         directory: Directory.Documents
       });
       
+      const fileType = getFileType(fileName);
       const mimeType = getMimeType(fileName);
-      return {
-        data: `data:${mimeType};base64,${file.data}`,
-        type: getFileType(fileName)
-      };
+      
+      if (fileType === 'pdf') {
+        // For PDFs, return Uint8Array format for react-pdf
+        return {
+          data: { data: base64ToUint8Array(file.data) },
+          type: 'pdf'
+        };
+      } else {
+        // For images, return data URI
+        return {
+          data: `data:${mimeType};base64,${file.data}`,
+          type: 'image'
+        };
+      }
     } catch (e) {
       console.error('Error loading receipt:', e);
       return null;

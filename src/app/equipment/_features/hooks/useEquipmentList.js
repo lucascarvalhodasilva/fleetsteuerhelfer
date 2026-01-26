@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import { Filesystem, Directory } from '@capacitor/filesystem';
-import { getMimeType, getFileType } from '@/utils/fileHelpers';
+import { getMimeType, getFileType, base64ToUint8Array } from '@/utils/fileHelpers';
 
 export const useEquipmentList = () => {
   const { equipmentEntries, deleteEquipmentEntry, selectedYear, taxRates } = useAppContext();
@@ -15,11 +15,22 @@ export const useEquipmentList = () => {
         directory: Directory.Documents
       });
       
+      const fileType = getFileType(fileName);
       const mimeType = getMimeType(fileName);
-      return {
-        data: `data:${mimeType};base64,${file.data}`,
-        type: getFileType(fileName)
-      };
+      
+      if (fileType === 'pdf') {
+        // For PDFs, return Uint8Array format for react-pdf
+        return {
+          data: { data: base64ToUint8Array(file.data) },
+          type: 'pdf'
+        };
+      } else {
+        // For images, return data URI
+        return {
+          data: `data:${mimeType};base64,${file.data}`,
+          type: 'image'
+        };
+      }
     } catch (e) {
       console.error('Error loading receipt:', e);
       return null;

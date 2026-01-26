@@ -52,3 +52,19 @@ export const getFileType = (fileName) => {
   
   return 'image'; // Default to image for all other types
 };
+
+/**
+ * Converts base64 string to Uint8Array for PDF rendering
+ * 
+ * @param {string} base64 - The base64 string (with or without data URI prefix)
+ * @returns {Uint8Array} - The converted byte array
+ */
+export const base64ToUint8Array = (base64) => {
+  const cleaned = base64.replace(/^data:application\/pdf;base64,/, '');
+  const binary = atob(cleaned);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+};
