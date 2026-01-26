@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { formatDate } from '@/utils/dateFormatter';
 import ConfirmationModal from '@/components/shared/ConfirmationModal';
-import DepreciationScheduleView from './DepreciationScheduleView';
+import FloatingScheduleCard from '@/components/equipment/FloatingScheduleCard';
 import SwipeableListItem from '@/components/shared/SwipeableListItem';
 
 export default function EquipmentList({ 
@@ -18,7 +18,8 @@ export default function EquipmentList({
   const [deleteConfirmation, setDeleteConfirmation] = useState({ isOpen: false, entry: null });
   const [collapsedMonths, setCollapsedMonths] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
-  const [expandedScheduleId, setExpandedScheduleId] = useState(null);
+  const [selectedEquipment, setSelectedEquipment] = useState(null);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
 
   const toggleMonth = (key) => {
     setCollapsedMonths(prev => ({ ...prev, [key]: !prev[key] }));
@@ -133,10 +134,21 @@ export default function EquipmentList({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setExpandedScheduleId(expandedScheduleId === entry.id ? null : entry.id);
+                  if (scheduleOpen && selectedEquipment?.id !== entry.id) {
+                    // Switch equipment - card will transition automatically
+                    setSelectedEquipment(entry);
+                  } else if (scheduleOpen && selectedEquipment?.id === entry.id) {
+                    // Same equipment clicked - close
+                    setScheduleOpen(false);
+                    setTimeout(() => setSelectedEquipment(null), 300);
+                  } else {
+                    // Open fresh
+                    setSelectedEquipment(entry);
+                    setScheduleOpen(true);
+                  }
                 }}
                 className={`w-8 h-8 rounded-lg transition-colors flex items-center justify-center ${
-                  expandedScheduleId === entry.id
+                  selectedEquipment?.id === entry.id && scheduleOpen
                     ? 'bg-blue-600 text-white'
                     : 'bg-blue-500/10 text-blue-600 hover:bg-blue-500/20'
                 }`}
@@ -148,15 +160,6 @@ export default function EquipmentList({
               </button>
             </div>
           </div>
-          
-          {/* Depreciation Schedule View */}
-          {expandedScheduleId === entry.id && generateDepreciationSchedule && (
-            <DepreciationScheduleView
-              item={entry}
-              schedule={generateDepreciationSchedule(entry)}
-              selectedYear={selectedYear}
-            />
-          )}
         </div>
       </SwipeableListItem>
     );
@@ -207,7 +210,10 @@ export default function EquipmentList({
       </div>
 
       {/* Equipment List */}
-      <div className="flex-1 overflow-y-auto min-h-0 space-y-2">
+      <div 
+        className="flex-1 overflow-y-auto min-h-0 space-y-2 transition-all duration-300"
+        style={{ paddingBottom: scheduleOpen ? '50vh' : '0' }}
+      >
         {filteredEquipmentEntries.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mb-4">
@@ -267,6 +273,19 @@ export default function EquipmentList({
         }}
         title="Eintrag löschen"
         message={deleteConfirmation.entry ? `Möchten Sie das Arbeitsmittel "${deleteConfirmation.entry.name}" wirklich löschen?` : ''}
+      />
+
+      {/* Floating Schedule Card */}
+      <FloatingScheduleCard
+        equipment={selectedEquipment}
+        open={scheduleOpen}
+        onClose={() => {
+          setScheduleOpen(false);
+          setTimeout(() => setSelectedEquipment(null), 300);
+        }}
+        schedule={selectedEquipment && generateDepreciationSchedule ? generateDepreciationSchedule(selectedEquipment) : null}
+        selectedYear={selectedYear}
+        onViewReceipt={handleViewReceipt}
       />
     </div>
   );
