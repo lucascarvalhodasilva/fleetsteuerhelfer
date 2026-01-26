@@ -159,9 +159,10 @@ export const useExpenses = () => {
       const MM = String(now.getMinutes()).padStart(2, '0');
       const timeStr = `${yyyy}${mm}${dd}${HH}${MM}`;
 
-      // Define filenames
-      const fileNameInternal = `expense_${entryId}_${timeStr}.jpg`;
-      const fileNameUser = `ausgabe_${entryId}_${timeStr}.jpg`;
+      // Define filenames with correct extension
+      const extension = tempExpenseReceiptType === 'pdf' ? 'pdf' : 'jpg';
+      const fileNameInternal = `expense_${entryId}_${timeStr}.${extension}`;
+      const fileNameUser = `ausgabe_${entryId}_${timeStr}.${extension}`;
 
       // Write to Directory.Documents
       await Filesystem.writeFile({

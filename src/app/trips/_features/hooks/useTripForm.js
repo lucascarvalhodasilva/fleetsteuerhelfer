@@ -242,8 +242,9 @@ export const useTripForm = () => {
       const MM = String(now.getMinutes()).padStart(2, '0');
       const timeStr = `${yyyy}${mm}${dd}${HH}${MM}`;
 
-      // Define filenames
-      const fileNameInternal = `transport_${tripId}_${timeStr}.jpg`;
+      // Define filenames with correct extension
+      const extension = tempPublicTransportReceiptType === 'pdf' ? 'pdf' : 'jpg';
+      const fileNameInternal = `transport_${tripId}_${timeStr}.${extension}`;
 
       // Write to Directory.Documents
       await Filesystem.writeFile({
