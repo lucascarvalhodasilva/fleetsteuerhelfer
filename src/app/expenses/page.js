@@ -4,10 +4,12 @@ import { useExpenses } from './_features/hooks/useExpenses';
 import ExpenseForm from './_features/components/ExpenseForm';
 import ExpenseList from './_features/components/ExpenseList';
 import { formatDate } from '@/utils/dateFormatter';
+import { useUIContext } from '@/context/UIContext';
 
 export default function ExpensesPage() {
   const [highlightId, setHighlightId] = useState(null);
   const [showExpenseModal, setShowExpenseModal] = useState(false);
+  const { pushModal, removeModal } = useUIContext();
   
   const {
     formData,
@@ -66,6 +68,31 @@ export default function ExpensesPage() {
       document.body.style.overflow = '';
     };
   }, [showExpenseModal]);
+
+  // Register modals with UIContext
+  useEffect(() => {
+    if (viewingReceipt) {
+      const modalId = `receipt-viewer-${Date.now()}`;
+      pushModal(modalId);
+      return () => removeModal(modalId);
+    }
+  }, [viewingReceipt, pushModal, removeModal]);
+
+  useEffect(() => {
+    if (showExpenseModal) {
+      const modalId = `expense-form-${Date.now()}`;
+      pushModal(modalId);
+      return () => removeModal(modalId);
+    }
+  }, [showExpenseModal, pushModal, removeModal]);
+
+  useEffect(() => {
+    if (isFullScreen) {
+      const modalId = `fullscreen-table-${Date.now()}`;
+      pushModal(modalId);
+      return () => removeModal(modalId);
+    }
+  }, [isFullScreen, pushModal, removeModal]);
 
   const monthNames = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
   const totalAmount = filteredEntries.reduce((sum, entry) => sum + entry.amount, 0);

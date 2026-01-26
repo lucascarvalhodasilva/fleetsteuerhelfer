@@ -6,10 +6,12 @@ import EquipmentForm from './_features/components/EquipmentForm';
 import EquipmentList from './_features/components/EquipmentList';
 import PDFViewer from '@/components/shared/PDFViewerDynamic';
 import { formatDate } from '@/utils/dateFormatter';
+import { useUIContext } from '@/context/UIContext';
 
 export default function EquipmentPage() {
   const [highlightId, setHighlightId] = useState(null);
   const [showEquipmentModal, setShowEquipmentModal] = useState(false);
+  const { pushModal, removeModal } = useUIContext();
 
   const {
     formData,
@@ -65,6 +67,31 @@ export default function EquipmentPage() {
     handleViewReceipt,
     generateDepreciationSchedule
   } = useEquipmentList();
+
+  // Register modals with UIContext
+  useEffect(() => {
+    if (viewingReceipt) {
+      const modalId = `receipt-viewer-${Date.now()}`;
+      pushModal(modalId);
+      return () => removeModal(modalId);
+    }
+  }, [viewingReceipt, pushModal, removeModal]);
+
+  useEffect(() => {
+    if (showEquipmentModal) {
+      const modalId = `equipment-form-${Date.now()}`;
+      pushModal(modalId);
+      return () => removeModal(modalId);
+    }
+  }, [showEquipmentModal, pushModal, removeModal]);
+
+  useEffect(() => {
+    if (isFullScreen) {
+      const modalId = `fullscreen-table-${Date.now()}`;
+      pushModal(modalId);
+      return () => removeModal(modalId);
+    }
+  }, [isFullScreen, pushModal, removeModal]);
 
   const totalDeductible = filteredEquipmentEntries.reduce((sum, entry) => sum + (entry.deductibleAmount || 0), 0);
 
