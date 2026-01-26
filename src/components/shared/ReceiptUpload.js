@@ -10,8 +10,21 @@ const PDFViewerComponent = dynamic(() => import('./PDFViewer'), { ssr: false });
 // Convert base64 to Uint8Array for react-pdf
 const base64ToUint8Array = (base64) => {
   try {
+    if (!base64 || typeof base64 !== 'string') {
+      console.error('base64ToUint8Array: Invalid input', typeof base64);
+      return null;
+    }
+    
     // Remove any data URL prefix if present
-    const cleaned = base64.replace(/^data:[^;]+;base64,/, '');
+    let cleaned = base64;
+    if (base64.includes(',')) {
+      cleaned = base64.split(',')[1] || base64;
+    }
+    cleaned = cleaned.replace(/^data:[^;]+;base64,/, '');
+    
+    // Remove whitespace that might cause issues
+    cleaned = cleaned.replace(/\s/g, '');
+    
     const binary = atob(cleaned);
     const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) {
@@ -19,7 +32,7 @@ const base64ToUint8Array = (base64) => {
     }
     return bytes;
   } catch (e) {
-    console.error('base64ToUint8Array failed:', e);
+    console.error('base64ToUint8Array failed:', e, 'Input length:', base64?.length);
     return null;
   }
 };
@@ -44,20 +57,27 @@ export default function ReceiptUpload({
     return () => { document.body.style.overflow = ''; };
   }, [showViewer]);
 
-  // Convert PDF for react-pdf - do this whenever receipt changes, not just when viewer opens
+  // Convert PDF for react-pdf - do this whenever receipt changes
   useEffect(() => {
     if (receiptType === 'pdf' && receipt) {
       setPdfError(false);
-      // Use setTimeout to ensure this doesn't block the render
+      setPdfData(null); // Reset first
+      
+      // Small delay to ensure state is ready
       const timer = setTimeout(() => {
-        const converted = base64ToUint8Array(receipt);
-        if (converted) {
-          setPdfData(converted);
-        } else {
+        try {
+          const converted = base64ToUint8Array(receipt);
+          if (converted && converted.length > 0) {
+            setPdfData(converted);
+          } else {
+            console.error('PDF conversion returned empty or null');
+            setPdfError(true);
+          }
+        } catch (e) {
+          console.error('PDF conversion error:', e);
           setPdfError(true);
-          setPdfData(null);
         }
-      }, 0);
+      }, 50);
       return () => clearTimeout(timer);
     } else {
       setPdfData(null);
@@ -111,7 +131,7 @@ export default function ReceiptUpload({
                 <ErrorState onClose={() => setShowViewer(false)} />
               ) : pdfData ? (
                 <div className="relative w-[92vw] h-[92vh]" onClick={(e) => e.stopPropagation()}>
-                  <PDFViewerComponent source={{ data: pdfData }} onClose={() => setShowViewer(false)} />
+                  <PDFViewerComponent source={{ data: pdfData }} onClose={() => setShowViewer(false)} onError={() => setPdfError(true)} />
                 </div>
               ) : (
                 <LoadingState onCancel={() => setShowViewer(false)} />

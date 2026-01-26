@@ -24,8 +24,8 @@ export default function SwipeableListItem({
   const [swipeDirection, setSwipeDirection] = useState(null); // 'left', 'right', or null
   const swipeState = useRef({ id: null, startX: 0, translateX: 0, dragging: false });
 
-  const actionsWidth = 120; // Width for edit/delete actions
-  const receiptWidth = 80; // Width for receipt button
+  const actionsWidth = 100; // Width for edit/delete actions (2 buttons)
+  const receiptWidth = 56; // Width for receipt button (1 button, proportional)
 
   const handlePointerDown = (e) => {
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -124,20 +124,19 @@ export default function SwipeableListItem({
       {/* Receipt Button (Left side - revealed on swipe right) */}
       {hasReceipt && (
         <div 
-          className={`absolute left-0 top-0 h-full flex items-center justify-center z-0 transition-opacity duration-200 ${
+          className={`absolute left-0 top-0 h-full flex items-center justify-start pl-3 z-0 transition-opacity duration-200 ${
             swipeDirection === 'right' ? 'opacity-100' : 'opacity-0'
           }`}
           style={{ width: `${receiptWidth}px` }}
         >
           <button
             onClick={(e) => handleActionClick('receipt', e)}
-            className="w-full h-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white transition-all flex flex-col items-center justify-center gap-1 active:scale-95"
+            className="w-10 h-10 bg-yellow-500/80 hover:bg-yellow-500/90 text-white transition-all flex items-center justify-center active:scale-95 rounded-xl"
             aria-label="Beleg ansehen"
           >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <span className="text-xs font-medium">Beleg</span>
           </button>
         </div>
       )}

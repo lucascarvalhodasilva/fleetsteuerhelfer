@@ -90,16 +90,16 @@ export default function PDFViewer({ source, onError, onClose }) {
   }
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden" onClick={(e) => e.stopPropagation()}>
       {/* Floating Toolbar */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 px-5 py-3 bg-black/60 backdrop-blur-md rounded-2xl text-white z-10 shadow-lg">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 px-5 py-3 bg-black/60 backdrop-blur-md rounded-2xl text-white z-10 shadow-lg" onClick={(e) => e.stopPropagation()}>
         {/* Page Navigation */}
         <div className="flex items-center gap-2">
-          <button onClick={() => goTo(currentPage - 1)} disabled={currentPage <= 1} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-white/10 transition-all">
+          <button onClick={(e) => { e.stopPropagation(); goTo(currentPage - 1); }} disabled={currentPage <= 1} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-white/10 transition-all">
             <ChevronLeft />
           </button>
           <span className="text-sm font-medium min-w-[60px] text-center">{currentPage} / {numPages}</span>
-          <button onClick={() => goTo(currentPage + 1)} disabled={currentPage >= numPages} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-white/10 transition-all">
+          <button onClick={(e) => { e.stopPropagation(); goTo(currentPage + 1); }} disabled={currentPage >= numPages} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-white/10 transition-all">
             <ChevronRight />
           </button>
         </div>
@@ -109,11 +109,11 @@ export default function PDFViewer({ source, onError, onClose }) {
 
         {/* Zoom Controls */}
         <div className="flex items-center gap-2">
-          <button onClick={zoomOut} disabled={scale <= 0.5} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-white/10 transition-all text-lg font-medium">
+          <button onClick={(e) => { e.stopPropagation(); zoomOut(); }} disabled={scale <= 0.5} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-white/10 transition-all text-lg font-medium">
             −
           </button>
           <span className="text-sm font-medium min-w-[50px] text-center">{Math.round(scale * 100)}%</span>
-          <button onClick={zoomIn} disabled={scale >= 3} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-white/10 transition-all text-lg font-medium">
+          <button onClick={(e) => { e.stopPropagation(); zoomIn(); }} disabled={scale >= 3} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-white/10 transition-all text-lg font-medium">
             +
           </button>
         </div>
@@ -123,7 +123,7 @@ export default function PDFViewer({ source, onError, onClose }) {
 
         {/* Close Button */}
         {onClose && (
-          <button onClick={onClose} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition-all">
+          <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition-all">
             <XIcon />
             <span className="text-sm font-medium">Schließen</span>
           </button>
