@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { formatDate } from '@/utils/dateFormatter';
 import ConfirmationModal from '@/components/shared/ConfirmationModal';
+import SwipeableListItem from '@/components/shared/SwipeableListItem';
 
 export default function TripList({ 
   tripEntries, 
@@ -14,10 +15,8 @@ export default function TripList({
   onAddTrip
 }) {
   const [deleteConfirmation, setDeleteConfirmation] = useState({ isOpen: false, entry: null });
-  const [openSwipeId, setOpenSwipeId] = useState(null);
   const [collapsedMonths, setCollapsedMonths] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
-  const swipeState = useRef({ id: null, startX: 0, translateX: 0, dragging: false });
 
   const toggleMonth = (key) => {
     setCollapsedMonths(prev => ({ ...prev, [key]: !prev[key] }));
@@ -53,69 +52,25 @@ export default function TripList({
   useEffect(() => {
     if (highlightId) {
       const element = document.getElementById(`trip-row-${highlightId}`);
-      const innerElement = document.getElementById(`swipe-inner-${highlightId}`);
       if (element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        if (innerElement) {
-          innerElement.classList.add('transition-all', 'duration-300', 'ease-in-out');
+        setTimeout(() => {
+          element.classList.add('transition-all', 'duration-300', 'ease-in-out');
           const flash = () => {
-            innerElement.classList.add('scale-[1.02]');
-            innerElement.classList.add('ring-2', 'ring-primary/50');
+            element.classList.add('scale-[1.02]');
+            element.classList.add('ring-2', 'ring-primary/50');
             setTimeout(() => {
-              innerElement.classList.remove('scale-[1.02]');
-              innerElement.classList.remove('ring-2', 'ring-primary/50');
+              element.classList.remove('scale-[1.02]');
+              element.classList.remove('ring-2', 'ring-primary/50');
             }, 300);
           };
           
           flash();
           setTimeout(flash, 600);
-        }
+        }, 100);
       }
     }
   }, [highlightId, tripEntries]);
-
-  const handlePointerDown = (e, id) => {
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    swipeState.current = { id, startX: clientX, translateX: 0, dragging: true };
-  };
-
-  const handlePointerMove = (e) => {
-    if (!swipeState.current.dragging) return;
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    let delta = clientX - swipeState.current.startX;
-    if (delta > 0) delta = 0;
-    const maxSwipe = -actionsWidth;
-    if (delta < maxSwipe) delta = maxSwipe;
-    swipeState.current.translateX = delta;
-    const el = document.getElementById(`swipe-inner-${swipeState.current.id}`);
-    if (el) {
-      el.style.transform = `translateX(${delta}px)`;
-    }
-  };
-
-  const handlePointerUp = () => {
-    if (!swipeState.current.dragging) return;
-    const shouldOpen = swipeState.current.translateX < -(actionsWidth / 3);
-    const id = swipeState.current.id;
-    setOpenSwipeId(shouldOpen ? id : null);
-    const el = document.getElementById(`swipe-inner-${id}`);
-    if (el) {
-      el.style.transform = `translateX(${shouldOpen ? -actionsWidth : 0}px)`;
-    }
-    swipeState.current = { id: null, startX: 0, translateX: 0, dragging: false };
-  };
-
-  useEffect(() => {
-    const onPointerUp = () => handlePointerUp();
-    window.addEventListener('mouseup', onPointerUp);
-    window.addEventListener('touchend', onPointerUp);
-    return () => {
-      window.removeEventListener('mouseup', onPointerUp);
-      window.removeEventListener('touchend', onPointerUp);
-    };
-  }, []);
-
-  const actionsWidth = 120;
 
   // Render a single trip entry
   const renderTripEntry = (entry) => {
@@ -137,53 +92,24 @@ export default function TripList({
     
     const mileageSum = amountTo + amountFrom + publicTransportSum;
     const totalDeductible = (entry.deductible || 0) + mileageSum;
+    
+    // Check if this entry has a receipt
+    const hasReceipt = publicTransportEntries.some(m => m.receiptFileName);
+    const receiptEntry = publicTransportEntries.find(m => m.receiptFileName);
 
     return (
-      <div 
+      <SwipeableListItem
         key={entry.id}
-        id={`trip-row-${entry.id}`}
-        className="relative overflow-hidden rounded-2xl bg-card/80 backdrop-blur-sm border border-border/30"
-        onMouseDown={(e) => handlePointerDown(e, entry.id)}
-        onTouchStart={(e) => handlePointerDown(e, entry.id)}
-        onMouseMove={handlePointerMove}
-        onTouchMove={handlePointerMove}
+        itemId={entry.id}
+        className="rounded-2xl bg-card/80 backdrop-blur-sm border border-border/30"
+        hasReceipt={hasReceipt}
+        onEdit={() => onEdit && onEdit(entry)}
+        onDelete={() => setDeleteConfirmation({ isOpen: true, entry })}
+        onViewReceipt={() => {
+          if (receiptEntry) handleViewReceipt(receiptEntry.receiptFileName);
+        }}
       >
-        {/* Swipe Actions */}
-        <div 
-          className="absolute top-0 right-0 h-full flex items-center justify-end gap-2 pr-3 z-0"
-          style={{ width: `${actionsWidth}px` }}
-        >
-          <button
-            onClick={(e) => { e.stopPropagation(); setOpenSwipeId(null); onEdit && onEdit(entry); }}
-            className="w-10 h-10 bg-primary/80 hover:bg-primary/90 text-white transition-all flex items-center justify-center active:scale-95 rounded-xl"
-            aria-label="Bearbeiten"
-          >
-            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-            </svg>
-          </button>
-          <button
-            onClick={(e) => { 
-              e.stopPropagation(); 
-              setOpenSwipeId(null); 
-              setDeleteConfirmation({ isOpen: true, entry }); 
-            }}
-            className="w-10 h-10 bg-red-500/80 hover:bg-red-500/90 text-white transition-all flex items-center justify-center active:scale-95 rounded-xl"
-            aria-label="Löschen"
-          >
-            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Card Content */}
-        <div
-          id={`swipe-inner-${entry.id}`}
-          className="relative p-4 transition-transform duration-200 bg-card z-10 rounded-2xl"
-          onMouseUp={handlePointerUp}
-          onTouchEnd={handlePointerUp}
-        >
+        <div id={`trip-row-${entry.id}`} className="p-4 rounded-2xl">
           <div className="flex items-center gap-4">
             {/* Date Badge */}
             <div className="w-12 h-12 rounded-xl flex flex-col items-center justify-center shrink-0 bg-primary/10 text-primary">
@@ -237,12 +163,11 @@ export default function TripList({
                   </span>
                 )}
                 
-                {publicTransportEntries.some(m => m.receiptFileName) && (
+                {hasReceipt && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      const withReceipt = publicTransportEntries.find(m => m.receiptFileName);
-                      if (withReceipt) handleViewReceipt(withReceipt.receiptFileName);
+                      if (receiptEntry) handleViewReceipt(receiptEntry.receiptFileName);
                     }}
                     className="w-6 h-6 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors flex items-center justify-center ml-1"
                     aria-label="Beleg ansehen"
@@ -256,7 +181,7 @@ export default function TripList({
             </div>
           </div>
         </div>
-      </div>
+      </SwipeableListItem>
     );
   };
 
