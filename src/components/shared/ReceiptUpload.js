@@ -64,7 +64,7 @@ export default function ReceiptUpload({
     }
     document.body.style.overflow = showViewer ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
-  }, [showViewer, receiptType, receipt, pdfData, pdfError]);
+  }, [showViewer]); // Only depend on showViewer to avoid re-render loops
 
   // Convert PDF for react-pdf - do this whenever receipt changes OR viewer opens
   useEffect(() => {
