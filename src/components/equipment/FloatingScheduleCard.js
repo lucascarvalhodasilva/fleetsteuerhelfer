@@ -145,13 +145,13 @@ export default function FloatingScheduleCard({
             </h3>
           </div>
           
-          {/* GWG Chip */}
-          <span className={`text-xs px-2.5 py-1 rounded-md border font-medium whitespace-nowrap ${
+          {/* Status Chip */}
+          <span className={`text-[10px] px-1.5 py-0.5 rounded ${
             isGWG 
-              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600' 
-              : 'bg-red-500/10 border-red-500/30 text-red-600'
+              ? 'bg-emerald-500/10 text-emerald-600' 
+              : 'bg-amber-500/10 text-amber-600'
           }`}>
-            GWG
+            {currentEquipment.status || (isGWG ? 'GWG' : 'AfA')}
           </span>
         </div>
 
