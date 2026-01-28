@@ -76,10 +76,11 @@ export default function ExpenseList({
     }
   }, [highlightId, filteredEntries]);
 
-  const totalAmount = filteredEntries.reduce((sum, entry) => sum + entry.amount, 0);
-
-  // Calculate totals for summary
+  // Calculate totals for summary (from filtered entries by month)
   const totalEntries = entriesByMonth.reduce((sum, group) => sum + group.entries.length, 0);
+  const totalAmount = entriesByMonth.reduce((sum, group) => 
+    sum + group.entries.reduce((s, entry) => s + entry.amount, 0), 0
+  );
   const averageAmount = totalEntries > 0 ? totalAmount / totalEntries : 0;
 
   return (

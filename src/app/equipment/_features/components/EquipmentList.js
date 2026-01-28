@@ -94,11 +94,14 @@ export default function EquipmentList({
     }
   }, [highlightId, filteredEquipmentEntries]);
 
-  const totalDeductible = filteredEquipmentEntries.reduce((sum, entry) => sum + (entry.deductibleAmount || 0), 0);
-
-  // Calculate totals for summary
+  // Calculate totals for summary (from filtered entries by month)
   const totalEntries = entriesByMonth.reduce((sum, group) => sum + group.entries.length, 0);
-  const totalPrice = filteredEquipmentEntries.reduce((sum, entry) => sum + (entry.price || 0), 0);
+  const totalDeductible = entriesByMonth.reduce((sum, group) => 
+    sum + group.entries.reduce((s, entry) => s + (entry.deductibleAmount || 0), 0), 0
+  );
+  const totalPrice = entriesByMonth.reduce((sum, group) => 
+    sum + group.entries.reduce((s, entry) => s + (entry.price || 0), 0), 0
+  );
 
   return (
     <div className="flex flex-col h-full bg-background/50">

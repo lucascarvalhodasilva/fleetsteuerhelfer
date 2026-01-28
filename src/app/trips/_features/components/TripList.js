@@ -72,15 +72,17 @@ export default function TripList({
     }
   }, [highlightId, tripEntries]);
 
-  // Calculate totals for summary
+  // Calculate totals for summary (from filtered entries by month)
   const totalEntries = entriesByMonth.reduce((sum, group) => sum + group.entries.length, 0);
-  const totalDeductible = tripEntries.reduce((sum, entry) => {
-    const relatedMileage = mileageEntries.filter(m => m.relatedTripId === entry.id);
-    const dayMileage = relatedMileage.length > 0
-      ? relatedMileage
-      : mileageEntries.filter(m => m.date === entry.date || m.date === entry.endDate);
-    const mileageSum = dayMileage.reduce((s, m) => s + (m.allowance || 0), 0);
-    return sum + (entry.deductible || 0) + mileageSum;
+  const totalDeductible = entriesByMonth.reduce((sum, group) => {
+    return sum + group.entries.reduce((s, entry) => {
+      const relatedMileage = mileageEntries.filter(m => m.relatedTripId === entry.id);
+      const dayMileage = relatedMileage.length > 0
+        ? relatedMileage
+        : mileageEntries.filter(m => m.date === entry.date || m.date === entry.endDate);
+      const mileageSum = dayMileage.reduce((ms, m) => ms + (m.allowance || 0), 0);
+      return s + (entry.deductible || 0) + mileageSum;
+    }, 0);
   }, 0);
 
   return (
