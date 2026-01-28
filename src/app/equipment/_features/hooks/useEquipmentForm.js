@@ -22,12 +22,6 @@ export const useEquipmentForm = () => {
   const [initialEditData, setInitialEditData] = useState(null);
   const [initialReceiptPath, setInitialReceiptPath] = useState(null);
 
-  const nameSuggestions = [
-    "Laptop", "Smartphone", "Monitor", "Tastatur", "Maus", "Headset", 
-    "Drucker", "Scanner", "Bürostuhl", "Schreibtisch", "Lampe", 
-    "Fachbuch", "Software-Lizenz", "Tablet", "Kamera"
-  ];
-
   const takePicture = async (source) => {
     try {
       const image = await Camera.getPhoto({
@@ -372,7 +366,6 @@ export const useEquipmentForm = () => {
     tempReceipt,
     tempReceiptType,
     removeReceipt,
-    nameSuggestions,
     takePicture,
     pickFile,
     handleSubmit,

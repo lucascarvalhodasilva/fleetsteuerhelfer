@@ -21,7 +21,6 @@ export default function EquipmentPage() {
     tempReceipt,
     tempReceiptType,
     removeReceipt,
-    nameSuggestions,
     takePicture,
     pickFile,
     handleSubmit,
@@ -173,7 +172,6 @@ export default function EquipmentPage() {
                 tempReceipt={tempReceipt}
                 tempReceiptType={tempReceiptType}
                 removeReceipt={removeReceipt}
-                nameSuggestions={nameSuggestions}
                 takePicture={takePicture}
                 pickFile={pickFile}
                 submitError={submitError}
