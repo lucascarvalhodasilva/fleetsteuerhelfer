@@ -145,22 +145,14 @@ export default function FloatingScheduleCard({
             </h3>
           </div>
           
-          {/* Compact Details as Chips */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs px-2.5 py-1 rounded-md bg-white/60 dark:bg-white/5 border border-border/30 text-foreground font-medium">
-              {parseFloat(currentEquipment.price || 0).toFixed(2)} €
-            </span>
-            <span className="text-xs px-2.5 py-1 rounded-md bg-white/60 dark:bg-white/5 border border-border/30 text-foreground font-medium">
-              {depreciationYears} {depreciationYears === 1 ? 'Jahr' : 'Jahre'}
-            </span>
-            <span className={`text-xs px-2.5 py-1 rounded-md border font-medium ${
-              isGWG 
-                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600' 
-                : 'bg-white/60 dark:bg-white/5 border-border/30 text-foreground'
-            }`}>
-              {isGWG ? 'GWG ✅' : 'Mehrjährig'}
-            </span>
-          </div>
+          {/* GWG Chip */}
+          <span className={`text-xs px-2.5 py-1 rounded-md border font-medium whitespace-nowrap ${
+            isGWG 
+              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600' 
+              : 'bg-red-500/10 border-red-500/30 text-red-600'
+          }`}>
+            GWG
+          </span>
         </div>
 
         {/* Depreciation Schedule */}
