@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import NumberInput from '@/components/shared/NumberInput';
 import CustomDatePicker from '@/components/shared/CustomDatePicker';
-import SuggestionInput from '@/components/shared/SuggestionInput';
 import ReceiptUpload from '@/components/shared/ReceiptUpload';
 import { LoadingButton } from '@/components/shared/skeletons';
 
@@ -14,7 +13,6 @@ export default function EquipmentForm({
   removeReceipt,
   takePicture,
   pickFile,
-  nameSuggestions, 
   submitError,
   isSubmitting,
   editingId,
@@ -91,12 +89,12 @@ export default function EquipmentForm({
             <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide mb-2 block">
               Bezeichnung
             </label>
-            <SuggestionInput
-              className="w-full px-3 py-2.5 bg-card rounded-lg border border-border/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent text-sm text-foreground placeholder:text-muted-foreground transition-colors"
+            <input
+              type="text"
+              placeholder="z.B. Laptop, Monitor"
               value={formData.name}
               onChange={e => setFormData({...formData, name: e.target.value})}
-              suggestions={nameSuggestions}
-              placeholder="z.B. Laptop, Monitor"
+              className="w-full px-3 py-2.5 bg-card rounded-lg border border-border/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent text-sm text-foreground placeholder:text-muted-foreground transition-colors"
             />
           </div>
 
