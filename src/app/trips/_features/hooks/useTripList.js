@@ -16,6 +16,7 @@ export const useTripList = () => {
   } = useAppContext();
 
   const [viewingReceipt, setViewingReceipt] = useState(null);
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
   const loadReceipt = async (fileName) => {
     try {
@@ -84,6 +85,8 @@ export const useTripList = () => {
     selectedYear,
     viewingReceipt,
     setViewingReceipt,
-    handleViewReceipt
+    handleViewReceipt,
+    isFullScreen,
+    setIsFullScreen
   };
 };
