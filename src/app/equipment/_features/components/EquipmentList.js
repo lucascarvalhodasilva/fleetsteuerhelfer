@@ -4,6 +4,7 @@ import ConfirmationModal from '@/components/shared/ConfirmationModal';
 import FloatingScheduleCard from './FloatingScheduleCard';
 import SwipeableListItem from '@/components/shared/SwipeableListItem';
 import { useUIContext } from '@/context/UIContext';
+import FullScreenTableView from './FullScreenTableView';
 
 export default function EquipmentList({ 
   filteredEquipmentEntries, 
@@ -18,7 +19,8 @@ export default function EquipmentList({
   scheduleOpen,
   setScheduleOpen,
   selectedEquipment,
-  setSelectedEquipment
+  setSelectedEquipment,
+  isFullScreen
 }) {
   const [deleteConfirmation, setDeleteConfirmation] = useState({ isOpen: false, entry: null });
   const [collapsedMonths, setCollapsedMonths] = useState({});
@@ -43,6 +45,17 @@ export default function EquipmentList({
   const toggleMonth = (key) => {
     setCollapsedMonths(prev => ({ ...prev, [key]: !prev[key] }));
   };
+
+  const handleSchedule = useCallback((entry) => {
+    if (scheduleOpen && selectedEquipment?.id !== entry.id) {
+      setSelectedEquipment(entry);
+    } else if (scheduleOpen && selectedEquipment?.id === entry.id) {
+      handleCloseScheduleCard();
+    } else {
+      setSelectedEquipment(entry);
+      setScheduleOpen(true);
+    }
+  }, [scheduleOpen, selectedEquipment, setSelectedEquipment, handleCloseScheduleCard, setScheduleOpen]);
 
   // Group entries by month for separators
   const entriesByMonth = useMemo(() => {
@@ -94,8 +107,6 @@ export default function EquipmentList({
     }
   }, [highlightId, filteredEquipmentEntries]);
 
-  const totalDeductible = filteredEquipmentEntries.reduce((sum, entry) => sum + (entry.deductibleAmount || 0), 0);
-
   // Render a single equipment entry
   const renderEquipmentEntry = (entry) => {
     return (
@@ -108,17 +119,7 @@ export default function EquipmentList({
         onDelete={() => setDeleteConfirmation({ isOpen: true, entry })}
         onViewReceipt={() => handleViewReceipt(entry.receiptFileName)}
         onSchedule={() => {
-          if (scheduleOpen && selectedEquipment?.id !== entry.id) {
-            // Switch equipment - card will transition automatically
-            setSelectedEquipment(entry);
-          } else if (scheduleOpen && selectedEquipment?.id === entry.id) {
-            // Same equipment clicked - close
-            handleCloseScheduleCard();
-          } else {
-            // Open fresh
-            setSelectedEquipment(entry);
-            setScheduleOpen(true);
-          }
+          handleSchedule(entry);
         }}
       >
         <div id={`equipment-row-${entry.id}`} className="p-4 rounded-2xl">
@@ -167,7 +168,20 @@ export default function EquipmentList({
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <>
+      <FullScreenTableView
+        isOpen={isFullScreen}
+        onClose={() => setIsFullScreen(false)}
+        entries={filteredEquipmentEntries}
+        selectedYear={selectedYear}
+        onAddEquipment={onAddEquipment}
+        onViewReceipt={handleViewReceipt}
+        onEdit={onEdit}
+        onDelete={(entry) => setDeleteConfirmation({ isOpen: true, entry })}
+        onSchedule={handleSchedule}
+      />
+
+      <div className="flex flex-col h-full">
       {/* Search and Action Buttons */}
       <div className="flex items-center gap-3 pb-3 shrink-0">
         <div className="relative flex-1">
@@ -286,5 +300,6 @@ export default function EquipmentList({
         onViewReceipt={handleViewReceipt}
       />
     </div>
+    </>
   );
 }

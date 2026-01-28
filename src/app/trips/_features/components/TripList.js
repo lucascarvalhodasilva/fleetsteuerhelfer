@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { formatDate } from '@/utils/dateFormatter';
 import ConfirmationModal from '@/components/shared/ConfirmationModal';
 import SwipeableListItem from '@/components/shared/SwipeableListItem';
+import FullScreenTableView from './FullScreenTableView';
 
 export default function TripList({ 
   tripEntries, 
@@ -12,7 +13,8 @@ export default function TripList({
   highlightId, 
   handleViewReceipt,
   onEdit,
-  onAddTrip
+  onAddTrip,
+  isFullScreen
 }) {
   const [deleteConfirmation, setDeleteConfirmation] = useState({ isOpen: false, entry: null });
   const [collapsedMonths, setCollapsedMonths] = useState({});
@@ -48,7 +50,7 @@ export default function TripList({
       .sort(([a], [b]) => b.localeCompare(a))
       .map(([, value]) => value);
   }, [tripEntries, searchQuery]);
-  
+
   useEffect(() => {
     if (highlightId) {
       const element = document.getElementById(`trip-row-${highlightId}`);
@@ -171,7 +173,16 @@ export default function TripList({
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <>
+      <FullScreenTableView
+        isOpen={isFullScreen}
+        onClose={() => setIsFullScreen(false)}
+        tripEntries={tripEntries}
+        mileageEntries={mileageEntries}
+        selectedYear={selectedYear}
+      />
+
+      <div className="flex flex-col h-full">
       {/* Search and Action Buttons */}
       <div className="flex items-center gap-3 pb-3 shrink-0">
         <div className="relative flex-1">
@@ -280,5 +291,6 @@ export default function TripList({
         message={deleteConfirmation.entry ? `Möchten Sie den Eintrag vom ${formatDate(deleteConfirmation.entry.date)} wirklich löschen?` : ''}
       />
     </div>
+    </>
   );
 }

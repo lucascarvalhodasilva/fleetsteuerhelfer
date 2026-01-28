@@ -4,12 +4,10 @@ import { useTripForm } from './_features/hooks/useTripForm';
 import { useTripList } from './_features/hooks/useTripList';
 import TripForm from './_features/components/TripForm';
 import TripList from './_features/components/TripList';
-import FullScreenTableView from './_features/components/FullScreenTableView';
 import PDFViewer from '@/components/shared/PDFViewerDynamic';
 import { useUIContext } from '@/context/UIContext';
 
 export default function TripsPage() {
-  const [isFullScreen, setIsFullScreen] = useState(false);
   const [highlightId, setHighlightId] = useState(null);
   const [showTripModal, setShowTripModal] = useState(false);
   const currentMonth = new Date().getMonth();
@@ -77,7 +75,9 @@ export default function TripsPage() {
     selectedYear,
     viewingReceipt,
     setViewingReceipt,
-    handleViewReceipt
+    handleViewReceipt,
+    isFullScreen,
+    setIsFullScreen
   } = useTripList();
 
   // Register receipt viewer modal with UIContext
@@ -131,6 +131,7 @@ export default function TripsPage() {
               setShowTripModal(true);
             }}
             onAddTrip={() => setShowTripModal(true)}
+            isFullScreen={isFullScreen}
           />
         </div>
 
@@ -191,14 +192,6 @@ export default function TripsPage() {
             </div>
           </div>
         )}
-
-        <FullScreenTableView 
-          isOpen={isFullScreen}
-          onClose={() => setIsFullScreen(false)}
-          tripEntries={tripEntries}
-          mileageEntries={mileageEntries}
-          selectedYear={selectedYear}
-        />
       </div>
     </div>
   );

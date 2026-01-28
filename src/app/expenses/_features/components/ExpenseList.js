@@ -3,6 +3,7 @@ import { formatDate } from '@/utils/dateFormatter';
 import ConfirmationModal from '@/components/shared/ConfirmationModal';
 import PDFViewer from '@/components/shared/PDFViewerDynamic';
 import SwipeableListItem from '@/components/shared/SwipeableListItem';
+import FullScreenTableView from './FullScreenTableView';
 
 export default function ExpenseList({ 
   filteredEntries, 
@@ -16,7 +17,8 @@ export default function ExpenseList({
   viewingReceipt,
   setViewingReceipt,
   onEdit,
-  onAddExpense
+  onAddExpense,
+  isFullScreen
 }) {
   const [deleteConfirmation, setDeleteConfirmation] = useState({ isOpen: false, entry: null });
   const [collapsedMonths, setCollapsedMonths] = useState({});
@@ -124,7 +126,19 @@ export default function ExpenseList({
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <>
+      <FullScreenTableView
+        isOpen={isFullScreen}
+        onClose={() => setIsFullScreen(false)}
+        entries={filteredEntries}
+        selectedYear={selectedYear}
+        onAddExpense={onAddExpense}
+        onViewReceipt={handleViewReceipt}
+        onEdit={onEdit}
+        onDelete={(entry) => setDeleteConfirmation({ isOpen: true, entry })}
+      />
+
+      <div className="flex flex-col h-full">
       {/* Search and Action Buttons */}
       <div className="flex items-center gap-3 pb-3 shrink-0">
         <div className="relative flex-1">
@@ -262,5 +276,6 @@ export default function ExpenseList({
         message={deleteConfirmation.entry ? `Möchten Sie die Ausgabe "${deleteConfirmation.entry.description}" vom ${formatDate(deleteConfirmation.entry.date)} wirklich löschen?` : ''}
       />
     </div>
+    </>
   );
 }
