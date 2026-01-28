@@ -1,8 +1,8 @@
 # Fleet-Steuer 🚗💼
 
-**German Tax Deduction Tracker for Vehicle Couriers**
+**Steuerabzugs-Tracker für Fahrzeugkuriere**
 
-A comprehensive cross-platform mobile application built with Next.js and Capacitor for tracking tax-deductible expenses, mileage, and equipment depreciation specifically designed for German couriers (Kurier-Fahrer).
+Eine umfassende plattformübergreifende mobile Anwendung, entwickelt mit Next.js und Capacitor, zur Verfolgung von steuerlich absetzbaren Ausgaben, Kilometern und Abschreibungen von Arbeitsmitteln - speziell konzipiert für deutsche Kurier-Fahrer.
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Web%20%7C%20iOS%20%7C%20Android-green.svg)
@@ -10,117 +10,117 @@ A comprehensive cross-platform mobile application built with Next.js and Capacit
 
 ---
 
-## 📋 Table of Contents
+## 📋 Inhaltsverzeichnis
 
-- [Overview](#-overview)
-- [Features](#-features)
+- [Übersicht](#-übersicht)
+- [Funktionen](#-funktionen)
 - [Tech Stack](#-tech-stack)
-- [Getting Started](#-getting-started)
-- [Project Structure](#-project-structure)
-- [Core Modules](#-core-modules)
-- [Documentation](#-documentation)
-- [Development](#-development)
+- [Erste Schritte](#-erste-schritte)
+- [Projektstruktur](#-projektstruktur)
+- [Kernmodule](#-kernmodule)
+- [Dokumentation](#-dokumentation)
+- [Entwicklung](#-entwicklung)
 - [Deployment](#-deployment)
-- [Contributing](#-contributing)
+- [Mitwirken](#-mitwirken)
 
 ---
 
-## 🎯 Overview
+## 🎯 Übersicht
 
-Fleet-Steuer is a specialized tax management application designed for self-employed vehicle couriers in Germany. It helps track and calculate tax-deductible expenses according to German tax law, including:
+Fleet-Steuer ist eine spezialisierte Steuerverwaltungsanwendung für selbstständige Fahrzeugkuriere in Deutschland. Sie hilft bei der Verfolgung und Berechnung von steuerlich absetzbaren Ausgaben gemäß deutschem Steuerrecht, einschließlich:
 
-- **Daily meal allowances** (Verpflegungspauschalen: €14/€28)
-- **Mileage tracking** with automatic cost calculation (€0.30/km)
-- **Equipment depreciation** (Abschreibung) with GWG threshold (€952)
-- **Receipt management** with PDF/image support
-- **Real-time tax deduction summaries**
+- **Verpflegungspauschalen** (€14/€28 pro Tag)
+- **Kilometererfassung** mit automatischer Kostenberechnung (€0,30/km)
+- **Abschreibung von Arbeitsmitteln** mit GWG-Grenze (€952)
+- **Belegverwaltung** mit PDF/Bild-Unterstützung
+- **Echtzeit-Steuerabzugsübersichten**
 
-### Why Fleet-Steuer?
+### Warum Fleet-Steuer?
 
-- ✅ **German tax law compliant** - Follows current tax regulations
-- ✅ **Offline-first** - Works without internet connection
-- ✅ **Mobile-optimized** - Touch-friendly swipe gestures
-- ✅ **Professional** - Production-ready with A+ module grades
-- ✅ **Cross-platform** - Web, iOS, and Android support
+- ✅ **Deutsches Steuerrecht konform** - Folgt aktuellen Steuervorschriften
+- ✅ **Offline-first** - Funktioniert ohne Internetverbindung
+- ✅ **Mobiloptimiert** - Touch-freundliche Wischgesten
+- ✅ **Professionell** - Produktionsreif mit A+ Modulnoten
+- ✅ **Plattformübergreifend** - Web, iOS und Android Unterstützung
 
 ---
 
-## ✨ Features
+## ✨ Funktionen
 
 ### 📊 Dashboard
-- Real-time KPI cards showing tax deduction summaries
-- Monthly expense trends with bar chart
-- Quick overview of total deductible amount
-- Grade: **A (92/100)**
+- Echtzeit-KPI-Karten mit Steuerabzugsübersichten
+- Monatliche Ausgabentrends mit Balkendiagramm
+- Schnellübersicht über den gesamten absetzbaren Betrag
+- Note: **A (92/100)**
 
-### 🚗 Trips Management
-- Mileage tracking with automatic calculations
-- Date and distance logging
-- Receipt upload support (PDF/images)
-- Swipe gestures for quick actions (edit/delete/receipt preview)
-- Grade: **A+ (98/100)**
+### 🚗 Fahrten-Verwaltung
+- Kilometererfassung mit automatischen Berechnungen
+- Datums- und Entfernungsprotokollierung
+- Beleg-Upload-Unterstützung (PDF/Bilder)
+- Wischgesten für schnelle Aktionen (bearbeiten/löschen/Beleg-Vorschau)
+- Note: **A+ (98/100)**
 
-### 💰 Expenses Tracking
-- Daily expense logging with meal allowances (€14/€28)
-- Receipt management
-- Date and category tracking
-- Bi-directional swipe actions
-- Grade: **A (94/100)**
+### 💰 Spesen-Tracking
+- Tägliche Spesenerfassung mit Verpflegungspauschalen (€14/€28)
+- Belegverwaltung
+- Datums- und Kategorieverfolgung
+- Bidirektionale Wischaktionen
+- Note: **A (94/100)**
 
-### 🛠️ Equipment (Arbeitsmittel)
-- Depreciation schedule calculation
-- GWG (Geringwertige Wirtschaftsgüter) threshold: €952
-- Multi-year depreciation tracking (max 3 years)
-- Floating schedule card with swipe-to-close
-- Receipt management
-- Grade: **A+ (96/100)**
+### 🛠️ Arbeitsmittel
+- Berechnung des Abschreibungsplans
+- GWG-Grenze (Geringwertige Wirtschaftsgüter): €952
+- Mehrjährige Abschreibungsverfolgung (max. 3 Jahre)
+- Floating Schedule Card mit Wisch-zum-Schließen
+- Belegverwaltung
+- Note: **A+ (96/100)**
 
-### ⚙️ Settings
-- Tax year configuration
-- Car cost settings (€0.30/km default)
-- Meal allowance settings (€14/€28)
-- GWG threshold management (€952)
-- Grade: **A+ (98/100)**
+### ⚙️ Einstellungen
+- Steuerjahr-Konfiguration
+- Autokosten-Einstellungen (Standard: €0,30/km)
+- Verpflegungspauschalen-Einstellungen (€14/€28)
+- GWG-Grenzenverwaltung (€952)
+- Note: **A+ (98/100)**
 
-### 🎨 UX Features
-- **Bi-directional swipe gestures** - Left for actions, right for receipts
-- **Android back button integration** - Smart navigation hierarchy
-- **Floating schedule cards** - Equipment depreciation details
-- **PDF/Image receipt preview** - Full-screen viewer with zoom
-- **Responsive design** - Works on all screen sizes
-- **Dark mode ready** - Material-UI theming
+### 🎨 UX-Funktionen
+- **Bidirektionale Wischgesten** - Links für Aktionen, rechts für Belege
+- **Android Zurück-Taste Integration** - Intelligente Navigationshierarchie
+- **Floating Schedule Cards** - Details zur Abschreibung von Arbeitsmitteln
+- **PDF/Bild-Beleg-Vorschau** - Vollbild-Viewer mit Zoom
+- **Responsive Design** - Funktioniert auf allen Bildschirmgrößen
+- **Dark Mode bereit** - Material-UI Theming
 
 ---
 
 ## 🛠️ Tech Stack
 
 ### Frontend
-- **Next.js 14** - React framework with App Router
-- **React 18** - UI library
-- **Material-UI (MUI) v6** - Component library
-- **MUI X Charts** - Data visualization
-- **Capacitor 6** - Cross-platform native runtime
+- **Next.js 14** - React Framework mit App Router
+- **React 18** - UI-Bibliothek
+- **Material-UI (MUI) v6** - Komponenten-Bibliothek
+- **MUI X Charts** - Datenvisualisierung
+- **Capacitor 6** - Plattformübergreifende native Laufzeitumgebung
 
 ### Mobile
-- **Capacitor Filesystem** - Local file storage
-- **Capacitor App** - Native app features (back button, etc.)
-- **iOS & Android** - Native builds
+- **Capacitor Filesystem** - Lokale Dateispeicherung
+- **Capacitor App** - Native App-Funktionen (Zurück-Taste, etc.)
+- **iOS & Android** - Native Builds
 
-### Storage
-- **Local Storage** - Browser storage for web
-- **Capacitor Filesystem** - Mobile file system
-- **Receipt storage** - Documents directory
+### Speicher
+- **Local Storage** - Browser-Speicher für Web
+- **Capacitor Filesystem** - Mobiles Dateisystem
+- **Belegspeicherung** - Dokumentenverzeichnis
 
-### Development
-- **ESLint** - Code linting
-- **Git** - Version control
-- **GitHub** - Repository hosting
+### Entwicklung
+- **ESLint** - Code-Linting
+- **Git** - Versionskontrolle
+- **GitHub** - Repository-Hosting
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Erste Schritte
 
-### Prerequisites
+### Voraussetzungen
 
 ```bash
 Node.js >= 18.x
@@ -129,28 +129,28 @@ npm >= 9.x
 
 ### Installation
 
-1. **Clone the repository**
+1. **Repository klonen**
    ```bash
    git clone https://github.com/lucascarvalhodasilva/ye.git
    cd ye
    ```
 
-2. **Install dependencies**
+2. **Abhängigkeiten installieren**
    ```bash
    npm install
    ```
 
-3. **Run development server**
+3. **Entwicklungsserver starten**
    ```bash
    npm run dev
    ```
 
-4. **Open in browser**
+4. **Im Browser öffnen**
    ```
    http://localhost:3000
    ```
 
-### Build for Production
+### Build für Produktion
 
 **Web:**
 ```bash
@@ -174,192 +174,192 @@ npx cap open android
 
 ---
 
-## 📁 Project Structure
+## 📁 Projektstruktur
 
 ```
 fleet-steuer/
 ├── src/
-│   ├── app/                      # Next.js App Router pages
-│   │   ├── dashboard/            # Dashboard module
-│   │   ├── trips/                # Trips tracking
-│   │   ├── expenses/             # Expenses tracking
-│   │   ├── equipment/            # Equipment management
-│   │   ├── settings/             # Settings module
-│   │   └── layout.js             # Root layout
-│   ├── components/               # Shared components
-│   │   ├── shared/               # Common UI components
-│   │   ├── Sidebar.js            # Navigation sidebar
+│   ├── app/                      # Next.js App Router Seiten
+│   │   ├── dashboard/            # Dashboard-Modul
+│   │   ├── trips/                # Fahrten-Tracking
+│   │   ├── expenses/             # Spesen-Tracking
+│   │   ├── equipment/            # Arbeitsmittel-Verwaltung
+│   │   ├── settings/             # Einstellungs-Modul
+│   │   └── layout.js             # Root-Layout
+│   ├── components/               # Geteilte Komponenten
+│   │   ├── shared/               # Gemeinsame UI-Komponenten
+│   │   ├── Sidebar.js            # Navigations-Sidebar
 │   │   └── ...
-│   ├── contexts/                 # React contexts
-│   ├── hooks/                    # Custom React hooks
-│   └── utils/                    # Utility functions
-├── docs/                         # Documentation
-│   ├── diagrams/                 # Flow charts & visual guides
-│   ├── implementations/          # Feature implementation docs
-│   ├── reviews/                  # Module reviews
-│   └── summaries/                # Quick references
-├── android/                      # Android native project
-├── ios/                          # iOS native project
-├── public/                       # Static assets
-└── capacitor.config.json         # Capacitor configuration
+│   ├── contexts/                 # React Contexts
+│   ├── hooks/                    # Custom React Hooks
+│   └── utils/                    # Hilfsfunktionen
+├── docs/                         # Dokumentation
+│   ├── diagrams/                 # Flussdiagramme & visuelle Anleitungen
+│   ├── implementations/          # Feature-Implementierungsdocs
+│   ├── reviews/                  # Modulbewertungen
+│   └── summaries/                # Schnellreferenzen
+├── android/                      # Android natives Projekt
+├── ios/                          # iOS natives Projekt
+├── public/                       # Statische Assets
+└── capacitor.config.json         # Capacitor-Konfiguration
 ```
 
 ---
 
-## 📚 Core Modules
+## 📚 Kernmodule
 
-### Module Quality Grades
+### Modulqualitätsnoten
 
-| Module | Grade | Score | Status |
+| Modul | Note | Punktzahl | Status |
 |--------|-------|-------|--------|
-| Settings | A+ | 98/100 | Production-Ready ✅ |
-| Trips | A+ | 98/100 | Production-Ready ✅ |
-| Equipment | A+ | 96/100 | Production-Ready ✅ |
-| Expenses | A | 94/100 | Production-Ready ✅ |
-| Dashboard | A | 92/100 | Production-Ready ✅ |
-| **Average** | **A+** | **95.2/100** | **Excellent** |
+| Einstellungen | A+ | 98/100 | Produktionsreif ✅ |
+| Fahrten | A+ | 98/100 | Produktionsreif ✅ |
+| Arbeitsmittel | A+ | 96/100 | Produktionsreif ✅ |
+| Spesen | A | 94/100 | Produktionsreif ✅ |
+| Dashboard | A | 92/100 | Produktionsreif ✅ |
+| **Durchschnitt** | **A+** | **95,2/100** | **Exzellent** |
 
-### Module Documentation
+### Moduldokumentation
 
-Comprehensive reviews available in [`docs/reviews/`](docs/reviews/):
-- [Dashboard Review](docs/reviews/dashboard-module-review.md)
-- [Trips Review](docs/reviews/trips-module-review.md)
-- [Expenses Review](docs/reviews/expenses-module-review.md)
-- [Equipment Review](docs/reviews/equipment-module-review.md)
-- [Settings Review](docs/reviews/settings-module-review.md)
-
----
-
-## 📖 Documentation
-
-Comprehensive documentation available in the [`docs/`](docs/) directory:
-
-### Visual Guides
-- [Swipe Gestures Guide](docs/diagrams/SWIPE_GESTURES_VISUAL_GUIDE.md)
-- [Android Back Button Flow](docs/diagrams/ANDROID_BACK_BUTTON_FLOW_DIAGRAM.md)
-
-### Implementation Details
-- [Android Back Button Handler](docs/implementations/IMPLEMENTATION_SUMMARY_BACK_BUTTON.md)
-- [Bi-directional Swipe Gestures](docs/implementations/SWIPE_GESTURES_IMPLEMENTATION.md)
-- [Monthly Expense Tracking](docs/implementations/SPESEN_IMPLEMENTATION_SUMMARY.md)
-
-### Quick References
-- [Equipment Summary](docs/summaries/EQUIPMENT_REVIEW_SUMMARY.md)
-- [Expenses Summary](docs/summaries/EXPENSES_REVIEW_SUMMARY.md)
-- [File Validation Summary](docs/summaries/FILE_SIZE_VALIDATION_SUMMARY.md)
-
-**Full Documentation Index:** [docs/README.md](docs/README.md)
+Umfassende Bewertungen verfügbar in [`docs/reviews/`](docs/reviews/):
+- [Dashboard-Bewertung](docs/reviews/dashboard-module-review.md)
+- [Fahrten-Bewertung](docs/reviews/trips-module-review.md)
+- [Spesen-Bewertung](docs/reviews/expenses-module-review.md)
+- [Arbeitsmittel-Bewertung](docs/reviews/equipment-module-review.md)
+- [Einstellungen-Bewertung](docs/reviews/settings-module-review.md)
 
 ---
 
-## 💻 Development
+## 📖 Dokumentation
 
-### Available Scripts
+Umfassende Dokumentation verfügbar im [`docs/`](docs/) Verzeichnis:
+
+### Visuelle Anleitungen
+- [Wischgesten-Anleitung](docs/diagrams/SWIPE_GESTURES_VISUAL_GUIDE.md)
+- [Android Zurück-Taste Flussdiagramm](docs/diagrams/ANDROID_BACK_BUTTON_FLOW_DIAGRAM.md)
+
+### Implementierungsdetails
+- [Android Zurück-Taste Handler](docs/implementations/IMPLEMENTATION_SUMMARY_BACK_BUTTON.md)
+- [Bidirektionale Wischgesten](docs/implementations/SWIPE_GESTURES_IMPLEMENTATION.md)
+- [Monatliches Spesen-Tracking](docs/implementations/SPESEN_IMPLEMENTATION_SUMMARY.md)
+
+### Schnellreferenzen
+- [Arbeitsmittel-Zusammenfassung](docs/summaries/EQUIPMENT_REVIEW_SUMMARY.md)
+- [Spesen-Zusammenfassung](docs/summaries/EXPENSES_REVIEW_SUMMARY.md)
+- [Dateivalidierungs-Zusammenfassung](docs/summaries/FILE_SIZE_VALIDATION_SUMMARY.md)
+
+**Vollständiger Dokumentationsindex:** [docs/README.md](docs/README.md)
+
+---
+
+## 💻 Entwicklung
+
+### Verfügbare Skripte
 
 ```bash
-# Development
-npm run dev              # Start dev server
-npm run build            # Build for production
-npm run export           # Export static site
-npm run lint             # Run ESLint
+# Entwicklung
+npm run dev              # Dev-Server starten
+npm run build            # Build für Produktion
+npm run export           # Statische Site exportieren
+npm run lint             # ESLint ausführen
 
 # Mobile
-npx cap sync             # Sync web to native
-npx cap open ios         # Open iOS in Xcode
-npx cap open android     # Open Android in Android Studio
+npx cap sync             # Web zu nativ synchronisieren
+npx cap open ios         # iOS in Xcode öffnen
+npx cap open android     # Android in Android Studio öffnen
 ```
 
-### Coding Standards
+### Coding-Standards
 
-- **ESLint** configuration for code quality
-- **Component organization** by feature modules
-- **German tax law** compliance in calculations
-- **Mobile-first** responsive design
-- **Accessibility** considerations (ARIA labels, keyboard navigation)
+- **ESLint** Konfiguration für Code-Qualität
+- **Komponenten-Organisation** nach Feature-Modulen
+- **Deutsches Steuerrecht** Konformität in Berechnungen
+- **Mobile-first** Responsive Design
+- **Barrierefreiheit** Überlegungen (ARIA-Labels, Tastaturnavigation)
 
-### Key Technologies
+### Schlüsseltechnologien
 
-- **App Router** - Next.js 14 routing system
-- **Server Components** - Optimized rendering
-- **Material-UI** - Component theming and customization
-- **Capacitor Plugins** - Native device features
-- **Local Storage** - Offline-first data persistence
+- **App Router** - Next.js 14 Routing-System
+- **Server Components** - Optimiertes Rendering
+- **Material-UI** - Komponenten-Theming und -Anpassung
+- **Capacitor Plugins** - Native Gerätefunktionen
+- **Local Storage** - Offline-first Datenpersistenz
 
 ---
 
 ## 🚢 Deployment
 
-### Web Deployment
+### Web-Deployment
 
-**Vercel (Recommended):**
+**Vercel (Empfohlen):**
 ```bash
 npm run build
-# Deploy to Vercel
+# Zu Vercel deployen
 ```
 
-**Static Export:**
+**Statischer Export:**
 ```bash
 npm run export
-# Deploy /out directory to any static host
+# /out Verzeichnis zu beliebigem Static-Host deployen
 ```
 
-### Mobile Deployment
+### Mobile-Deployment
 
 **iOS App Store:**
-1. Build in Xcode: `npx cap open ios`
-2. Configure signing & capabilities
-3. Archive and upload to App Store Connect
+1. In Xcode builden: `npx cap open ios`
+2. Signing & Capabilities konfigurieren
+3. Archivieren und zu App Store Connect hochladen
 
 **Android Play Store:**
-1. Build in Android Studio: `npx cap open android`
-2. Generate signed APK/AAB
-3. Upload to Google Play Console
+1. In Android Studio builden: `npx cap open android`
+2. Signiertes APK/AAB generieren
+3. Zu Google Play Console hochladen
 
 ---
 
-## 🤝 Contributing
+## 🤝 Mitwirken
 
-Contributions are welcome! Please follow these guidelines:
+Beiträge sind willkommen! Bitte folgen Sie diesen Richtlinien:
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. Repository forken
+2. Feature-Branch erstellen (`git checkout -b feature/tolle-funktion`)
+3. Änderungen committen (`git commit -m 'Füge tolle Funktion hinzu'`)
+4. Branch pushen (`git push origin feature/tolle-funktion`)
+5. Pull Request öffnen
 
-### Development Guidelines
+### Entwicklungsrichtlinien
 
-- Follow existing code style and patterns
-- Write meaningful commit messages
-- Update documentation for new features
-- Test on multiple devices (iOS, Android, Web)
-- Ensure German tax law compliance
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License.
+- Bestehenden Code-Stil und Muster folgen
+- Aussagekräftige Commit-Nachrichten schreiben
+- Dokumentation für neue Funktionen aktualisieren
+- Auf mehreren Geräten testen (iOS, Android, Web)
+- Deutsche Steuerrechtskonformität sicherstellen
 
 ---
 
-## 👨‍💻 Author
+## 📄 Lizenz
+
+Dieses Projekt ist unter der MIT-Lizenz lizenziert.
+
+---
+
+## 👨‍💻 Autor
 
 **Lucas Carvalho da Silva**
-- Email: lucas@carvalhodasilva.de
+- E-Mail: lucas@carvalhodasilva.de
 - GitHub: [@lucascarvalhodasilva](https://github.com/lucascarvalhodasilva)
 
 ---
 
-## 🙏 Acknowledgments
+## 🙏 Danksagungen
 
-- German tax regulations (Einkommensteuergesetz)
-- Material-UI for excellent component library
-- Next.js team for amazing framework
-- Capacitor for seamless cross-platform development
+- Deutsche Steuervorschriften (Einkommensteuergesetz)
+- Material-UI für exzellente Komponenten-Bibliothek
+- Next.js Team für fantastisches Framework
+- Capacitor für nahtlose plattformübergreifende Entwicklung
 
 ---
 
-**Built with ❤️ for German couriers**
+**Gebaut mit ❤️ für deutsche Kuriere**
 
-*Last Updated: January 28, 2026*
+*Zuletzt aktualisiert: 28. Januar 2026*
