@@ -50,7 +50,7 @@ export default function TripList({
       .sort(([a], [b]) => b.localeCompare(a))
       .map(([, value]) => value);
   }, [tripEntries, searchQuery]);
-  
+
   useEffect(() => {
     if (highlightId) {
       const element = document.getElementById(`trip-row-${highlightId}`);
@@ -73,26 +73,6 @@ export default function TripList({
       }
     }
   }, [highlightId, tripEntries]);
-
-  // Helper function to calculate entry total
-  const calculateEntryTotal = (entry) => {
-    const relatedMileage = mileageEntries.filter(m => m.relatedTripId === entry.id);
-    const dayMileage = relatedMileage.length > 0
-      ? relatedMileage
-      : mileageEntries.filter(m => m.date === entry.date || m.date === entry.endDate);
-
-    const tripTo = dayMileage.find(m => m.purpose && m.purpose.includes('Beginn'));
-    const tripFrom = dayMileage.find(m => m.purpose && m.purpose.includes('Ende'));
-    
-    const amountTo = tripTo ? tripTo.allowance : 0;
-    const amountFrom = tripFrom ? tripFrom.allowance : 0;
-    
-    const publicTransportEntries = dayMileage.filter(m => m.vehicleType === 'public_transport');
-    const publicTransportSum = publicTransportEntries.reduce((sum, m) => sum + (m.allowance || 0), 0);
-    
-    const mileageSum = amountTo + amountFrom + publicTransportSum;
-    return (entry.deductible || 0) + mileageSum;
-  };
 
   // Render a single trip entry
   const renderTripEntry = (entry) => {
@@ -192,9 +172,8 @@ export default function TripList({
     );
   };
 
-  // Render fullscreen table view
-  if (isFullScreen) {
-    return (
+  return (
+    <>
       <FullScreenTableView
         isOpen={isFullScreen}
         onClose={() => setIsFullScreen(false)}
@@ -202,11 +181,8 @@ export default function TripList({
         mileageEntries={mileageEntries}
         selectedYear={selectedYear}
       />
-    );
-  }
 
-  return (
-    <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full">
       {/* Search and Action Buttons */}
       <div className="flex items-center gap-3 pb-3 shrink-0">
         <div className="relative flex-1">
@@ -315,5 +291,6 @@ export default function TripList({
         message={deleteConfirmation.entry ? `Möchten Sie den Eintrag vom ${formatDate(deleteConfirmation.entry.date)} wirklich löschen?` : ''}
       />
     </div>
+    </>
   );
 }

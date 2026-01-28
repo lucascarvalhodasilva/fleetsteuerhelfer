@@ -264,23 +264,18 @@ export default function FullScreenTableView({
                 })
             )}
           </tbody>
-          <tfoot className="sticky bottom-0 z-20">
-            <tr className="bg-card border-t-2 border-border">
-              <td colSpan={5} className="border border-border px-3 py-3 font-bold text-foreground">
-                Gesamtsumme {selectedYear}
-              </td>
-              <td className="border border-border px-3 py-3 text-right font-bold text-emerald-600 tabular-nums">
-                {totalDeductible.toFixed(2)}
-              </td>
-              <td className="border border-border px-3 py-3 text-right font-bold text-blue-600 tabular-nums">
-                {totalMileage.toFixed(2)}
-              </td>
-              <td className="border border-border px-3 py-3 text-right font-bold text-foreground bg-emerald-500/10 tabular-nums text-base">
-                {totalSum.toFixed(2)}
-              </td>
-            </tr>
-          </tfoot>
         </table>
+      </div>
+      {/* Footer pinned to bottom of the overlay */}
+      <div className="shrink-0 border-t border-border bg-card/95 backdrop-blur-sm px-4 py-3 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))]">
+        <div className="max-w-5xl w-full mx-auto flex items-center justify-between text-sm font-bold text-foreground">
+          <span>Gesamtsumme {selectedYear}</span>
+          <div className="flex items-center gap-6 tabular-nums">
+            <span className="text-emerald-600">{totalDeductible.toFixed(2)} €</span>
+            <span className="text-blue-600">{totalMileage.toFixed(2)} €</span>
+            <span className="text-foreground bg-emerald-500/10 px-3 py-1.5 rounded-lg text-base">{totalSum.toFixed(2)} €</span>
+          </div>
+        </div>
       </div>
     </div>
   );
