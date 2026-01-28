@@ -17,6 +17,18 @@ export default function FloatingScheduleCard({
   const [currentSchedule, setCurrentSchedule] = useState(schedule);
   const [isVisible, setIsVisible] = useState(false);
   
+  // Handle keyboard close (Escape key)
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape' && open) {
+        onClose();
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open, onClose]);
+  
   // Handle equipment change - slide out and back in
   useEffect(() => {
     if (open && equipment) {
@@ -113,6 +125,9 @@ export default function FloatingScheduleCard({
         <div className="flex items-center justify-center mb-3">
           <div 
             className="w-12 h-1.5 bg-muted-foreground/40 rounded-full cursor-grab active:cursor-grabbing active:bg-muted-foreground/60"
+            aria-label="Zum Schließen nach unten wischen"
+            role="button"
+            tabIndex={0}
           />
         </div>
 
@@ -178,7 +193,7 @@ export default function FloatingScheduleCard({
                     )}
                   </div>
                   <div className="text-sm font-semibold text-blue-600">
-                    {yearData.deduction.toFixed(2)} €
+                    +{yearData.deduction.toFixed(2)} €
                   </div>
                 </div>
               ))}
