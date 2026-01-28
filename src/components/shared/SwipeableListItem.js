@@ -27,8 +27,9 @@ export default function SwipeableListItem({
   const swipeState = useRef({ id: null, startX: 0, translateX: 0, dragging: false });
 
   // Calculate actions width based on available buttons
-  const baseActionsWidth = 100; // edit + delete (2 buttons)
-  const scheduleButtonWidth = 56; // schedule button width
+  // Each button is w-10 (40px), gap-2 (8px between), pr-3 (12px padding right)
+  const baseActionsWidth = 100; // edit + delete: 40 + 8 + 40 + 12 = 100px
+  const scheduleButtonWidth = 48; // schedule button + gap: 40 + 8 = 48px
   const actionsWidth = onViewSchedule ? baseActionsWidth + scheduleButtonWidth : baseActionsWidth;
   const receiptWidth = 56; // Width for receipt button (1 button, proportional)
 
