@@ -3,6 +3,7 @@ import { formatDate } from '@/utils/dateFormatter';
 import ConfirmationModal from '@/components/shared/ConfirmationModal';
 import FloatingScheduleCard from '@/components/equipment/FloatingScheduleCard';
 import SwipeableListItem from '@/components/shared/SwipeableListItem';
+import { useUIContext } from '@/context/UIContext';
 
 export default function EquipmentList({ 
   filteredEquipmentEntries, 
@@ -20,6 +21,7 @@ export default function EquipmentList({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEquipment, setSelectedEquipment] = useState(null);
   const [scheduleOpen, setScheduleOpen] = useState(false);
+  const { openScheduleCard, closeScheduleCard: contextCloseScheduleCard } = useUIContext();
 
   const toggleMonth = (key) => {
     setCollapsedMonths(prev => ({ ...prev, [key]: !prev[key] }));
@@ -74,6 +76,18 @@ export default function EquipmentList({
       }
     }
   }, [highlightId, filteredEquipmentEntries]);
+
+  // Register/unregister schedule card with UIContext for back button handling
+  useEffect(() => {
+    if (scheduleOpen) {
+      openScheduleCard(() => {
+        setScheduleOpen(false);
+        setTimeout(() => setSelectedEquipment(null), 300);
+      });
+    } else {
+      contextCloseScheduleCard();
+    }
+  }, [scheduleOpen, openScheduleCard, contextCloseScheduleCard]);
 
   const totalDeductible = filteredEquipmentEntries.reduce((sum, entry) => sum + (entry.deductibleAmount || 0), 0);
 
