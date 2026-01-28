@@ -86,6 +86,19 @@ export default function EquipmentPage() {
     };
   }, [showEquipmentModal, viewingReceipt, scheduleOpen]); // Only respond to modal/receipt state changes
 
+  // Helper to close floating card first, then execute action
+  const closeFloatingCardThen = (action) => {
+    if (scheduleOpen) {
+      setScheduleOpen(false);
+      setTimeout(() => {
+        setSelectedEquipment(null);
+        action();
+      }, 300);
+    } else {
+      action();
+    }
+  };
+
   // Register modals with UIContext
   useEffect(() => {
     if (viewingReceipt) {
@@ -126,13 +139,15 @@ export default function EquipmentPage() {
             deleteEquipmentEntry={deleteEquipmentEntry}
             selectedYear={selectedYear}
             setIsFullScreen={setIsFullScreen}
-            handleViewReceipt={handleViewReceipt}
+            handleViewReceipt={(fileName) => closeFloatingCardThen(() => handleViewReceipt(fileName))}
             highlightId={highlightId}
             onEdit={async (entry) => {
-              await startEdit(entry);
-              setShowEquipmentModal(true);
+              closeFloatingCardThen(async () => {
+                await startEdit(entry);
+                setShowEquipmentModal(true);
+              });
             }}
-            onAddEquipment={() => setShowEquipmentModal(true)}
+            onAddEquipment={() => closeFloatingCardThen(() => setShowEquipmentModal(true))}
             generateDepreciationSchedule={generateDepreciationSchedule}
             scheduleOpen={scheduleOpen}
             setScheduleOpen={setScheduleOpen}
