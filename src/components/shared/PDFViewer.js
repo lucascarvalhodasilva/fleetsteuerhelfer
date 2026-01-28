@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 
 // Use local worker file from /public folder
@@ -14,6 +14,7 @@ export default function PDFViewer({ source, onError, onClose }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [containerSize, setContainerSize] = useState({ width: null, height: null });
+  const lastFileRef = useRef({ value: null, dataKey: null, rest: null });
 
   useEffect(() => {
     const update = () => setContainerSize({
@@ -64,6 +65,36 @@ export default function PDFViewer({ source, onError, onClose }) {
     cMapUrl: `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/cmaps/`,
     cMapPacked: true,
   }), []);
+
+  // Keep the file prop stable to avoid unnecessary reloads and React-PDF warnings.
+  const memoizedSource = useMemo(() => {
+    if (!source) {
+      lastFileRef.current = { value: null, dataKey: null, rest: null };
+      return null;
+    }
+
+    if (isSimpleSource(source)) {
+      lastFileRef.current = { value: source, dataKey: null, rest: null };
+      return source;
+    }
+
+    if (typeof source === 'object') {
+      const { data, ...rest } = source;
+      const dataKey = getDataKey(data);
+      const prev = lastFileRef.current;
+
+      if (prev && prev.dataKey === dataKey && shallowEqual(rest, prev.rest)) {
+        return prev.value;
+      }
+
+      const next = data !== undefined ? { ...rest, data } : { ...rest };
+      lastFileRef.current = { value: next, dataKey, rest };
+      return next;
+    }
+
+    lastFileRef.current = { value: source, dataKey: null, rest: null };
+    return source;
+  }, [source]);
 
   if (error) {
     return (
@@ -135,7 +166,7 @@ export default function PDFViewer({ source, onError, onClose }) {
         <div className="min-h-full min-w-full flex">
           <div className="m-auto">
             {isLoading && <Spinner />}
-            <Document file={source} onLoadSuccess={handleLoad} onLoadError={handleError} options={options} loading={null} error={null}>
+            <Document file={memoizedSource} onLoadSuccess={handleLoad} onLoadError={handleError} options={options} loading={null} error={null}>
               {!isLoading && numPages > 0 && (
                 <Page
                   pageNumber={currentPage}
@@ -163,3 +194,42 @@ const Spinner = () => (
 const XIcon = () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>;
 const ChevronLeft = () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>;
 const ChevronRight = () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>;
+
+function isTypedArray(value) {
+  return ArrayBuffer.isView(value) && !(value instanceof DataView);
+}
+
+function isSimpleSource(value) {
+  if (typeof value === 'string' || value instanceof ArrayBuffer || isTypedArray(value)) {
+    return true;
+  }
+  if (typeof Blob !== 'undefined' && value instanceof Blob) {
+    return true;
+  }
+  if (typeof File !== 'undefined' && value instanceof File) {
+    return true;
+  }
+  return false;
+}
+
+function getDataKey(value) {
+  if (value instanceof ArrayBuffer) {
+    return value;
+  }
+  if (isTypedArray(value)) {
+    return value.buffer;
+  }
+  return value || null;
+}
+
+function shallowEqual(a, b) {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  const aKeys = Object.keys(a);
+  const bKeys = Object.keys(b);
+  if (aKeys.length !== bKeys.length) return false;
+  for (const key of aKeys) {
+    if (a[key] !== b[key]) return false;
+  }
+  return true;
+}
