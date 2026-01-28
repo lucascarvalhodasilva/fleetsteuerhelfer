@@ -28,15 +28,15 @@ export default function SwipeableListItem({
   
   // Calculate actions width based on number of buttons
   const numRightActions = 2; // edit + delete
-  const numLeftActions = (hasReceipt ? 1 : 0) + (onSchedule ? 1 : 0); // receipt + optional schedule
+  const numLeftActions = 1 + (onSchedule ? 1 : 0); // receipt (always) + optional schedule
   const actionsWidth = numRightActions * 48 + Math.max(0, numRightActions - 1) * 8; // 48px per button + 8px gap
-  const leftActionsWidth = numLeftActions * 48 + Math.max(0, numLeftActions - 1) * 8; // Left side actions width
+  const leftActionsWidth = numLeftActions * 48 + Math.max(0, numLeftActions - 1) * 8 + 12; // 48px per button + 8px gap + 12px padding
   
   // Store widths in ref for event handlers
-  const widthsRef = useRef({ actionsWidth, leftActionsWidth, hasReceipt, onSchedule });
+  const widthsRef = useRef({ actionsWidth, leftActionsWidth, onSchedule });
   useEffect(() => {
-    widthsRef.current = { actionsWidth, leftActionsWidth, hasReceipt, onSchedule };
-  }, [actionsWidth, leftActionsWidth, hasReceipt, onSchedule]);
+    widthsRef.current = { actionsWidth, leftActionsWidth, onSchedule };
+  }, [actionsWidth, leftActionsWidth, onSchedule]);
 
   const handlePointerDown = (e) => {
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -49,7 +49,7 @@ export default function SwipeableListItem({
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     let delta = clientX - swipeState.current.startX;
     
-    const { actionsWidth: currentActionsWidth, leftActionsWidth: currentLeftActionsWidth, hasReceipt: currentHasReceipt, onSchedule: currentOnSchedule } = widthsRef.current;
+    const { actionsWidth: currentActionsWidth, leftActionsWidth: currentLeftActionsWidth } = widthsRef.current;
     
     // Limit swipe range
     if (delta < 0) {
@@ -57,13 +57,9 @@ export default function SwipeableListItem({
       const maxSwipe = -currentActionsWidth;
       if (delta < maxSwipe) delta = maxSwipe;
     } else {
-      // Swipe right - show receipt/schedule (only if has receipt or schedule)
-      if (!currentHasReceipt && !currentOnSchedule) {
-        delta = 0;
-      } else {
-        const maxSwipe = currentLeftActionsWidth;
-        if (delta > maxSwipe) delta = maxSwipe;
-      }
+      // Swipe right - always allow (show receipt/schedule)
+      const maxSwipe = currentLeftActionsWidth;
+      if (delta > maxSwipe) delta = maxSwipe;
     }
     
     swipeState.current.translateX = delta;
@@ -79,14 +75,14 @@ export default function SwipeableListItem({
     const delta = swipeState.current.translateX;
     let newDirection = null;
     
-    const { actionsWidth: currentActionsWidth, leftActionsWidth: currentLeftActionsWidth, hasReceipt: currentHasReceipt, onSchedule: currentOnSchedule } = widthsRef.current;
+    const { actionsWidth: currentActionsWidth, leftActionsWidth: currentLeftActionsWidth } = widthsRef.current;
     
     // Determine if swipe threshold was met (50px)
     if (delta < -50) {
       // Swipe left - show actions
       newDirection = 'left';
-    } else if (delta > 50 && (currentHasReceipt || currentOnSchedule)) {
-      // Swipe right - show receipt/schedule
+    } else if (delta > 50) {
+      // Swipe right - always allow (show receipt/schedule)
       newDirection = 'right';
     }
     
@@ -115,7 +111,7 @@ export default function SwipeableListItem({
     closeSwipe();
     if (action === 'edit' && onEdit) onEdit();
     if (action === 'delete' && onDelete) onDelete();
-    if (action === 'receipt' && onViewReceipt) onViewReceipt();
+    if (action === 'receipt' && hasReceipt && onViewReceipt) onViewReceipt();
     if (action === 'schedule' && onSchedule) onSchedule();
   };
 
@@ -138,37 +134,39 @@ export default function SwipeableListItem({
       onTouchMove={handlePointerMove}
     >
       {/* Receipt and Schedule Buttons (Left side - revealed on swipe right) */}
-      {(hasReceipt || onSchedule) && (
-        <div 
-          className={`absolute left-0 top-0 h-full flex items-center justify-start gap-2 pl-3 z-0 transition-opacity duration-200 ${
-            swipeDirection === 'right' ? 'opacity-100' : 'opacity-0'
+      <div 
+        className={`absolute left-0 top-0 h-full flex items-center justify-start gap-2 pl-3 z-0 transition-opacity duration-200 ${
+          swipeDirection === 'right' ? 'opacity-100' : 'opacity-0'
+        }`}
+        style={{ width: `${leftActionsWidth}px` }}
+      >
+        {/* Receipt button - always shown, disabled when no receipt */}
+        <button
+          onClick={(e) => handleActionClick('receipt', e)}
+          className={`w-10 h-10 transition-all flex items-center justify-center rounded-xl ${
+            hasReceipt 
+              ? 'bg-yellow-500/80 hover:bg-yellow-500/90 text-white active:scale-95 cursor-pointer' 
+              : 'bg-gray-400/60 text-gray-600 cursor-not-allowed'
           }`}
-          style={{ width: `${leftActionsWidth}px` }}
+          aria-label={hasReceipt ? "Beleg ansehen" : "Kein Beleg vorhanden"}
+          disabled={!hasReceipt}
         >
-          {hasReceipt && (
-            <button
-              onClick={(e) => handleActionClick('receipt', e)}
-              className="w-10 h-10 bg-yellow-500/80 hover:bg-yellow-500/90 text-white transition-all flex items-center justify-center active:scale-95 rounded-xl"
-              aria-label="Beleg ansehen"
-            >
-              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </button>
-          )}
-          {onSchedule && (
-            <button
-              onClick={(e) => handleActionClick('schedule', e)}
-              className="w-10 h-10 bg-primary/80 hover:bg-primary/90 text-white transition-all flex items-center justify-center active:scale-95 rounded-xl"
-              aria-label="Abschreibungsplan"
-            >
-              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-            </button>
-          )}
-        </div>
-      )}
+          <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </button>
+        {onSchedule && (
+          <button
+            onClick={(e) => handleActionClick('schedule', e)}
+            className="w-10 h-10 bg-primary/80 hover:bg-primary/90 text-white transition-all flex items-center justify-center active:scale-95 rounded-xl"
+            aria-label="Abschreibungsplan"
+          >
+            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </button>
+        )}
+      </div>
 
       {/* Main Content (slides on swipe) */}
       <div
