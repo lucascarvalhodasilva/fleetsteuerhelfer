@@ -11,6 +11,8 @@ import { useUIContext } from '@/context/UIContext';
 export default function EquipmentPage() {
   const [highlightId, setHighlightId] = useState(null);
   const [showEquipmentModal, setShowEquipmentModal] = useState(false);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [selectedEquipment, setSelectedEquipment] = useState(null);
   const { pushModal, removeModal, generateModalId } = useUIContext();
 
   const {
@@ -43,6 +45,16 @@ export default function EquipmentPage() {
     setShowEquipmentModal(false);
     cancelEdit(); // Always reset form when closing modal
   };
+
+  // Auto-close schedule card when opening form or receipt preview
+  useEffect(() => {
+    if (showEquipmentModal || viewingReceipt) {
+      if (scheduleOpen) {
+        setScheduleOpen(false);
+        setTimeout(() => setSelectedEquipment(null), 300);
+      }
+    }
+  }, [showEquipmentModal, viewingReceipt, scheduleOpen]);
 
   // Prevent body scroll when modal is open
   useEffect(() => {
@@ -116,6 +128,10 @@ export default function EquipmentPage() {
             }}
             onAddEquipment={() => setShowEquipmentModal(true)}
             generateDepreciationSchedule={generateDepreciationSchedule}
+            scheduleOpen={scheduleOpen}
+            setScheduleOpen={setScheduleOpen}
+            selectedEquipment={selectedEquipment}
+            setSelectedEquipment={setSelectedEquipment}
           />
         </div>
 
