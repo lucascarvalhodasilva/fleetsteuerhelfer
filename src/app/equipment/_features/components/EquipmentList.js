@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { formatDate } from '@/utils/dateFormatter';
 import ConfirmationModal from '@/components/shared/ConfirmationModal';
 import FloatingScheduleCard from '@/components/equipment/FloatingScheduleCard';
 import SwipeableListItem from '@/components/shared/SwipeableListItem';
+import { useUIContext } from '@/context/UIContext';
 
 export default function EquipmentList({ 
   filteredEquipmentEntries, 
@@ -22,6 +23,20 @@ export default function EquipmentList({
   const [deleteConfirmation, setDeleteConfirmation] = useState({ isOpen: false, entry: null });
   const [collapsedMonths, setCollapsedMonths] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
+  const { openScheduleCard, closeScheduleCard } = useUIContext();
+
+  // Handle schedule card close - integrates with UIContext for back button support
+  const handleCloseScheduleCard = useCallback(() => {
+    setScheduleOpen(false);
+    setTimeout(() => setSelectedEquipment(null), 300);
+  }, [setScheduleOpen, setSelectedEquipment]);
+
+  // Sync with UIContext when schedule opens
+  useEffect(() => {
+    if (scheduleOpen) {
+      openScheduleCard(handleCloseScheduleCard);
+    }
+  }, [scheduleOpen, openScheduleCard, handleCloseScheduleCard]);
 
   const toggleMonth = (key) => {
     setCollapsedMonths(prev => ({ ...prev, [key]: !prev[key] }));
@@ -96,8 +111,7 @@ export default function EquipmentList({
             setSelectedEquipment(entry);
           } else if (scheduleOpen && selectedEquipment?.id === entry.id) {
             // Same equipment clicked - close
-            setScheduleOpen(false);
-            setTimeout(() => setSelectedEquipment(null), 300);
+            handleCloseScheduleCard();
           } else {
             // Open fresh
             setSelectedEquipment(entry);
@@ -264,10 +278,7 @@ export default function EquipmentList({
       <FloatingScheduleCard
         equipment={selectedEquipment}
         open={scheduleOpen}
-        onClose={() => {
-          setScheduleOpen(false);
-          setTimeout(() => setSelectedEquipment(null), 300);
-        }}
+        onClose={handleCloseScheduleCard}
         schedule={selectedEquipment && generateDepreciationSchedule ? generateDepreciationSchedule(selectedEquipment) : null}
         selectedYear={selectedYear}
         onViewReceipt={handleViewReceipt}
