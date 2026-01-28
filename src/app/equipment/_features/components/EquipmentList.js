@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { formatDate } from '@/utils/dateFormatter';
 import ConfirmationModal from '@/components/shared/ConfirmationModal';
-import FloatingScheduleCard from '@/components/equipment/FloatingScheduleCard';
+import FloatingScheduleCard from './FloatingScheduleCard';
 import SwipeableListItem from '@/components/shared/SwipeableListItem';
 import { useUIContext } from '@/context/UIContext';
 
