@@ -7,7 +7,7 @@ const AppContext = createContext();
 // ============================================
 // MOCK DATA FOR DEVELOPMENT
 // ============================================
-const ENABLE_MOCK_DATA = true; // Set to false to disable mock data
+const ENABLE_MOCK_DATA = process.env.NODE_ENV === 'development'; // Only enabled in dev mode
 
 const generateMockData = (currentYear) => {
   const mockTripEntries = [

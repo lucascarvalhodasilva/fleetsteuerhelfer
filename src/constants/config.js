@@ -3,10 +3,10 @@
  */
 
 /**
- * Enable mock data for development
- * Set to false for production
+ * Enable mock data for development only
+ * Automatically disabled in production builds
  */
-export const ENABLE_MOCK_DATA = true;
+export const ENABLE_MOCK_DATA = process.env.NODE_ENV === 'development';
 
 /**
  * Local storage keys
